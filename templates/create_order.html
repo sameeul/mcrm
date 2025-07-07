@@ -103,22 +103,6 @@
                             </div>
                         </div>
                         
-                        <div class="col-md-4 mb-3">
-                            {{ form.area_id.label(class="form-label") }}
-                            {{ form.area_id(class="form-select" + (" is-invalid" if form.area_id.errors else ""), id="area_id", disabled=true) }}
-                            {% if form.area_id.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.area_id.errors %}
-                                        {{ error }}
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                            <div class="form-text">
-                                <span id="area-loading" class="d-none">
-                                    <i class="bi bi-arrow-clockwise spin"></i> Loading areas...
-                                </span>
-                            </div>
-                        </div>
                     </div>
                     
                     <div class="alert alert-info">
@@ -409,7 +393,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const orderForm = document.getElementById('orderForm');
     const citySelect = document.getElementById('city_id');
     const zoneSelect = document.getElementById('zone_id');
-    const areaSelect = document.getElementById('area_id');
     const productsDataField = document.getElementById('products_data');
     const addProductBtn = document.getElementById('addProductBtn');
     const productRows = document.getElementById('productRows');
@@ -436,7 +419,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Loading indicators
     const cityLoading = document.getElementById('city-loading');
     const zoneLoading = document.getElementById('zone-loading');
-    const areaLoading = document.getElementById('area-loading');
     
     // Data storage
     let availableProducts = [];
@@ -458,14 +440,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    zoneSelect.addEventListener('change', function() {
-        const zoneId = this.value;
-        if (zoneId && zoneId !== '0') {
-            loadAreas(zoneId);
-        } else {
-            resetAreas();
-        }
-    });
     
     // Product management
     addProductBtn.addEventListener('click', addProductRow);
@@ -533,34 +507,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    // Load areas function
-    function loadAreas(zoneId) {
-        areaLoading.classList.remove('d-none');
-        areaSelect.disabled = true;
-        
-        fetch(`/api/areas/${zoneId}`)
-            .then(response => response.json())
-            .then(data => {
-                areaSelect.innerHTML = '<option value="0">Select Area</option>';
-                data.forEach(area => {
-                    const option = document.createElement('option');
-                    option.value = area.id;
-                    option.textContent = area.name;
-                    if (!area.home_delivery_available) {
-                        option.textContent += ' (Pickup Only)';
-                    }
-                    areaSelect.appendChild(option);
-                });
-                areaSelect.disabled = false;
-            })
-            .catch(error => {
-                console.error('Error loading areas:', error);
-                areaSelect.innerHTML = '<option value="0">Error loading areas</option>';
-            })
-            .finally(() => {
-                areaLoading.classList.add('d-none');
-            });
-    }
     
     // Load products function
     function loadProducts() {
@@ -841,13 +787,6 @@ document.addEventListener('DOMContentLoaded', function() {
             zoneSelect.classList.remove('is-invalid');
         }
         
-        if (!areaSelect.value || areaSelect.value === '0') {
-            errors.push('Please select a delivery area.');
-            areaSelect.classList.add('is-invalid');
-            isValid = false;
-        } else {
-            areaSelect.classList.remove('is-invalid');
-        }
         
         // Validate each product row
         const productRowElements = productRows.querySelectorAll('.product-row:not(.d-none)');

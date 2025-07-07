@@ -127,8 +127,8 @@
                     <thead class="table-light">
                         <tr>
                             <th>Product</th>
-                            <th>Details</th>
-                            <th>Tracking Code</th>
+                            <th>Size</th>
+                            <th>Product Code</th>
                             <th class="text-center">Quantity</th>
                             <th class="text-end">Unit Price</th>
                             <th class="text-end">Subtotal</th>
@@ -140,18 +140,13 @@
                             <td>
                                 <div>
                                     <strong>{{ item.product.get_display_name() }}</strong>
-                                    <br>
-                                    <small class="text-muted">{{ item.product.name }}</small>
                                 </div>
                             </td>
                             <td>
                                 <div>
-                                    <span class="badge bg-secondary">{{ item.product.color }}</span>
-                                    <span class="badge bg-outline-secondary">Size: {{ item.product.size }}</span>
+                                    {{ item.product.size }}
                                 </div>
-                                {% if item.product.size_group %}
-                                <small class="text-muted d-block">Group: {{ item.product.size_group.name }}</small>
-                                {% endif %}
+
                             </td>
                             <td class="text-center">
                                 {% if item.tracking_code %}

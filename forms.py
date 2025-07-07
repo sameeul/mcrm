@@ -241,9 +241,6 @@ class CreateOrderForm(FlaskForm):
     zone_id = SelectField('Zone', coerce=int, validators=[
         DataRequired(message='Please select a zone')
     ])
-    area_id = SelectField('Area', coerce=int, validators=[
-        DataRequired(message='Please select an area')
-    ])
     
     # Products will be handled via JavaScript and submitted as JSON
     products_data = HiddenField('Products Data')
@@ -260,16 +257,13 @@ class CreateOrderForm(FlaskForm):
         super(CreateOrderForm, self).__init__(*args, **kwargs)
         
         # Load all location data from database for validation
-        from models import PathaoCity, PathaoZone, PathaoArea
+        from models import PathaoCity, PathaoZone
         
         self.city_id.choices = [(0, 'Select City')] + [
             (city.city_id, city.city_name) for city in PathaoCity.query.all()
         ]
         self.zone_id.choices = [(0, 'Select Zone')] + [
             (zone.zone_id, zone.zone_name) for zone in PathaoZone.query.all()
-        ]
-        self.area_id.choices = [(0, 'Select Area')] + [
-            (area.area_id, area.area_name) for area in PathaoArea.query.all()
         ]
     
     def validate_products_data(self, products_data):

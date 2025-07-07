@@ -1,7 +1,7 @@
 import requests
 import json
 from datetime import datetime, timedelta
-from models import db, PathaoCity, PathaoZone, PathaoArea, PathaoToken
+from models import db, PathaoCity, PathaoZone, PathaoToken
 from flask import current_app
 
 class PathaoService:
@@ -201,48 +201,6 @@ class PathaoService:
             # Return cached data even if stale
             return PathaoZone.query.filter_by(city_id=city_id).all()
     
-    @classmethod
-    def get_areas(cls, zone_id, force_refresh=False):
-        """Get areas for a zone with caching"""
-        try:
-            # Check cache first
-            if not force_refresh:
-                cache_cutoff = datetime.utcnow() - timedelta(hours=cls.CACHE_DURATION_HOURS)
-                cached_areas = PathaoArea.query.filter(
-                    PathaoArea.zone_id == zone_id,
-                    PathaoArea.last_updated > cache_cutoff
-                ).all()
-                
-                if cached_areas:
-                    return cached_areas
-            
-            # Fetch from API
-            access_token = cls.get_access_token()
-            if not access_token:
-                return []
-            
-            url = f"{cls.BASE_URL}/aladdin/api/v1/zones/{zone_id}/area-list"
-            headers = {
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json; charset=UTF-8"
-            }
-            
-            response = requests.get(url, headers=headers, timeout=30)
-            response.raise_for_status()
-            
-            data = response.json()
-            areas_data = data.get('data', {}).get('data', [])
-            
-            # Update cache
-            cls._update_areas_cache(zone_id, areas_data)
-            
-            # Return updated cache
-            return PathaoArea.query.filter_by(zone_id=zone_id).all()
-            
-        except Exception as e:
-            current_app.logger.error(f"Error fetching areas for zone {zone_id}: {str(e)}")
-            # Return cached data even if stale
-            return PathaoArea.query.filter_by(zone_id=zone_id).all()
     
     @classmethod
     def _update_cities_cache(cls, cities_data):
@@ -292,37 +250,9 @@ class PathaoService:
             current_app.logger.error(f"Error updating zones cache: {str(e)}")
             db.session.rollback()
     
-    @classmethod
-    def _update_areas_cache(cls, zone_id, areas_data):
-        """Update areas cache in database"""
-        try:
-            for area_data in areas_data:
-                area = PathaoArea.query.filter_by(area_id=area_data['area_id']).first()
-                if area:
-                    area.area_name = area_data['area_name']
-                    area.zone_id = zone_id
-                    area.home_delivery_available = area_data.get('home_delivery_available', True)
-                    area.pickup_available = area_data.get('pickup_available', True)
-                    area.last_updated = datetime.utcnow()
-                else:
-                    area = PathaoArea(
-                        area_id=area_data['area_id'],
-                        area_name=area_data['area_name'],
-                        zone_id=zone_id,
-                        home_delivery_available=area_data.get('home_delivery_available', True),
-                        pickup_available=area_data.get('pickup_available', True),
-                        last_updated=datetime.utcnow()
-                    )
-                    db.session.add(area)
-            
-            db.session.commit()
-            
-        except Exception as e:
-            current_app.logger.error(f"Error updating areas cache: {str(e)}")
-            db.session.rollback()
     
     @classmethod
-    def get_location_names(cls, city_id=None, zone_id=None, area_id=None):
+    def get_location_names(cls, city_id=None, zone_id=None):
         """Get location names for given IDs"""
         result = {}
         
@@ -333,9 +263,5 @@ class PathaoService:
         if zone_id:
             zone = PathaoZone.query.filter_by(zone_id=zone_id).first()
             result['zone_name'] = zone.zone_name if zone else None
-        
-        if area_id:
-            area = PathaoArea.query.filter_by(area_id=area_id).first()
-            result['area_name'] = area.area_name if area else None
         
         return result

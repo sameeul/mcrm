@@ -205,8 +205,7 @@ def create_order():
             # Get location names from Pathao service
             location_names = PathaoService.get_location_names(
                 city_id=form.city_id.data,
-                zone_id=form.zone_id.data,
-                area_id=form.area_id.data
+                zone_id=form.zone_id.data
             )
             
             # Create order with customer and location information
@@ -217,8 +216,6 @@ def create_order():
                 city_name=location_names.get('city_name'),
                 zone_id=form.zone_id.data,
                 zone_name=location_names.get('zone_name'),
-                area_id=form.area_id.data,
-                area_name=location_names.get('area_name'),
                 delivery_charge=form.delivery_charge.data or 0.00,
                 discount=form.discount.data or 0.00,
                 total_amount=0
@@ -630,23 +627,6 @@ def api_zones(city_id):
     except Exception as e:
         return jsonify({'error': 'Failed to fetch zones'}), 500
 
-@main.route('/api/areas/<int:zone_id>')
-@login_required
-def api_areas(zone_id):
-    """API endpoint to get areas for a specific zone"""
-    try:
-        areas = PathaoService.get_areas(zone_id)
-        return jsonify([
-            {
-                'id': area.area_id, 
-                'name': area.area_name,
-                'home_delivery_available': area.home_delivery_available,
-                'pickup_available': area.pickup_available
-            }
-            for area in areas
-        ])
-    except Exception as e:
-        return jsonify({'error': 'Failed to fetch areas'}), 500
 
 @main.route('/api/products')
 @login_required

@@ -66,23 +66,9 @@ class PathaoZone(db.Model):
     city_id = db.Column(db.Integer, db.ForeignKey('pathao_city.city_id'), nullable=False)
     last_updated = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Relationships
-    areas = db.relationship('PathaoArea', backref='zone', lazy=True, cascade='all, delete-orphan')
-    
     def __repr__(self):
         return f'<PathaoZone {self.zone_name}>'
 
-class PathaoArea(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    area_id = db.Column(db.Integer, unique=True, nullable=False)  # Pathao area_id
-    area_name = db.Column(db.String(100), nullable=False)
-    zone_id = db.Column(db.Integer, db.ForeignKey('pathao_zone.zone_id'), nullable=False)
-    home_delivery_available = db.Column(db.Boolean, default=True)
-    pickup_available = db.Column(db.Boolean, default=True)
-    last_updated = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    def __repr__(self):
-        return f'<PathaoArea {self.area_name}>'
 
 class PathaoToken(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -291,8 +277,6 @@ class Order(db.Model):
     city_name = db.Column(db.String(100), nullable=True)
     zone_id = db.Column(db.Integer, nullable=True)  # Pathao zone_id  
     zone_name = db.Column(db.String(100), nullable=True)
-    area_id = db.Column(db.Integer, nullable=True)  # Pathao area_id
-    area_name = db.Column(db.String(100), nullable=True)
     
     # Order Financial Details
     delivery_charge = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
@@ -314,8 +298,6 @@ class Order(db.Model):
     def delivery_location(self):
         """Get formatted delivery location"""
         parts = []
-        if self.area_name:
-            parts.append(self.area_name)
         if self.zone_name:
             parts.append(self.zone_name)
         if self.city_name:
