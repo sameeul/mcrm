@@ -159,7 +159,7 @@ if __name__ == '__main__':
     
     # Development server settings
     port = int(os.environ.get('PORT', 5000))
-    debug = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
+    # debug = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
     
     print("=" * 50)
     print("🔐 Secure Order Management System")
@@ -169,4 +169,4 @@ if __name__ == '__main__':
     print("REMEMBER: Change admin password after first login!")
     print("=" * 50)
     
-    app.run(host='0.0.0.0', port=port, debug=debug)
+    app.run(host='0.0.0.0', port=port)
