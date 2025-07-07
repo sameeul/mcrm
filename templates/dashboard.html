@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Secure Order Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-speedometer2"></i> Dashboard</h1>
+    <div class="text-muted">
+        Welcome back, <strong>{{ current_user.username }}</strong>!
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    {% if current_user.is_admin() %}
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ stats.total_products }}</h4>
+                            <p class="mb-0">Total Products</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-box-seam fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ stats.low_stock_products }}</h4>
+                            <p class="mb-0">Low Stock Items</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-exclamation-triangle fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ stats.total_orders }}</h4>
+                            <p class="mb-0">Total Orders</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-cart-check fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ stats.pending_orders }}</h4>
+                            <p class="mb-0">Pending Orders</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-clock fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="col-md-4 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ stats.my_orders }}</h4>
+                            <p class="mb-0">My Orders</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-cart-check fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ stats.pending_orders }}</h4>
+                            <p class="mb-0">Pending Orders</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-clock fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ stats.completed_orders }}</h4>
+                            <p class="mb-0">Completed Orders</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-check-circle fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('main.create_order') }}" class="btn btn-success w-100">
+                            <i class="bi bi-plus-circle"></i> Create Order
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('main.inventory') }}" class="btn btn-primary w-100">
+                            <i class="bi bi-box-seam"></i> View Inventory
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('main.orders') }}" class="btn btn-info w-100">
+                            <i class="bi bi-cart-check"></i> View Orders
+                        </a>
+                    </div>
+                    {% if current_user.is_admin() %}
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('main.add_product') }}" class="btn btn-warning w-100">
+                            <i class="bi bi-plus-square"></i> Add Product
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('main.reports') }}" class="btn btn-secondary w-100">
+                            <i class="bi bi-graph-up"></i> View Reports
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Orders and Low Stock -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-clock-history"></i> Recent Orders</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_orders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    {% if current_user.is_admin() %}
+                                    <th>Customer</th>
+                                    {% endif %}
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                <tr>
+                                    <td><strong>#{{ order.id }}</strong></td>
+                                    {% if current_user.is_admin() %}
+                                    <td>{{ order.user.username }}</td>
+                                    {% endif %}
+                                    <td>{{ order.total_amount|currency }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if order.status == 'completed' else 'warning' if order.status == 'pending' else 'info' if order.status == 'processing' else 'secondary' }}">
+                                            {{ order.status.title() }}
+                                        </span>
+                                    </td>
+                                    <td>{{ order.created_at.strftime('%m/%d/%Y') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('main.order_details', order_id=order.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center">
+                        <a href="{{ url_for('main.orders') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-arrow-right"></i> View All Orders
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-cart-x fs-1"></i>
+                        <p class="mt-2">No recent orders found</p>
+                        <a href="{{ url_for('main.create_order') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Create Your First Order
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    {% if current_user.is_admin() %}
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-exclamation-triangle"></i> Low Stock Alert</h5>
+            </div>
+            <div class="card-body">
+                {% if low_stock_products %}
+                    {% for product in low_stock_products %}
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                        <div>
+                            <strong>{{ product.name }}</strong><br>
+                            <small class="text-muted">Stock: {{ product.stock_quantity }}</small>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('main.edit_product', product_id=product.id) }}" class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil"></i> Edit
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('main.inventory') }}" class="btn btn-outline-warning">
+                            <i class="bi bi-arrow-right"></i> View Inventory
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-check-circle fs-1 text-success"></i>
+                        <p class="mt-2">All products are well stocked!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

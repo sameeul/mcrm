@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Add Product Type - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-plus-square"></i> Add Product Type</h1>
+    <a href="{{ url_for('main.product_types') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Product Types
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-tags"></i> Product Type Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" class="needs-validation" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="Enter product type name") }}
+                        {% if form.name.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Product type name (e.g., "Dress", "Shirt", "Pants", "Jacket")
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows="3", placeholder="Enter description (optional)") }}
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.description.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Optional description to help identify this product type
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i> Add Product Type
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="bi bi-info-circle"></i> Product Type Guidelines</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Naming:</strong>
+                    <ul class="small text-muted mb-0">
+                        <li>Use broad categories</li>
+                        <li>Keep names simple and clear</li>
+                        <li>Avoid overly specific terms</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Examples:</strong>
+                    <ul class="small text-muted mb-0">
+                        <li><strong>Dress</strong> - All types of dresses</li>
+                        <li><strong>Shirt</strong> - T-shirts, blouses, dress shirts</li>
+                        <li><strong>Pants</strong> - Jeans, trousers, shorts</li>
+                        <li><strong>Jacket</strong> - Coats, blazers, hoodies</li>
+                        <li><strong>Shoes</strong> - All footwear</li>
+                        <li><strong>Accessories</strong> - Bags, belts, jewelry</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Benefits:</strong>
+                    <ul class="small text-muted mb-0">
+                        <li>Organize inventory efficiently</li>
+                        <li>Enable size group management</li>
+                        <li>Improve product search</li>
+                        <li>Generate better reports</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="bi bi-lightbulb"></i> Next Steps</h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info mb-0">
+                    <small>
+                        <i class="bi bi-info-circle"></i>
+                        After creating a product type, you can:
+                        <ul class="mb-0 mt-2">
+                            <li>Create size groups for this type</li>
+                            <li>Add products under this category</li>
+                            <li>Manage inventory by type</li>
+                        </ul>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-capitalize first letter of product type name
+    const nameInput = document.getElementById('name');
+    if (nameInput) {
+        nameInput.addEventListener('blur', function() {
+            if (this.value) {
+                this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1).toLowerCase();
+            }
+        });
+    }
+    
+    // Form validation
+    const form = document.querySelector('.needs-validation');
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+});
+</script>
+{% endblock %}

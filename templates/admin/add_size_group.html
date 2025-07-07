@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}Add Size Group - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-plus-square"></i> Add Size Group</h1>
+    <a href="{{ url_for('main.size_groups') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Size Groups
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-rulers"></i> Size Group Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" class="needs-validation" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.product_type_id.label(class="form-label") }}
+                        {{ form.product_type_id(class="form-control" + (" is-invalid" if form.product_type_id.errors else "")) }}
+                        {% if form.product_type_id.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.product_type_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Select the product type this size group belongs to
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="Enter size group name") }}
+                        {% if form.name.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Size group name (e.g., "Small", "Medium", "Large", "Numeric")
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.sizes.label(class="form-label") }}
+                        {{ form.sizes(class="form-control" + (" is-invalid" if form.sizes.errors else ""), placeholder="Enter sizes separated by commas") }}
+                        {% if form.sizes.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.sizes.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Enter sizes separated by commas (e.g., "S, M, L" or "34, 36, 38, 40")
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows="3", placeholder="Enter description (optional)") }}
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.description.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Optional description to help identify this size group
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i> Add Size Group
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="bi bi-info-circle"></i> Size Group Examples</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Clothing Sizes:</strong>
+                    <ul class="small text-muted mb-0">
+                        <li><strong>Small Group:</strong> XS, S, M</li>
+                        <li><strong>Large Group:</strong> L, XL, XXL</li>
+                        <li><strong>Numeric:</strong> 34, 36, 38, 40</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Shoe Sizes:</strong>
+                    <ul class="small text-muted mb-0">
+                        <li><strong>Small:</strong> 6, 7, 8</li>
+                        <li><strong>Medium:</strong> 9, 10, 11</li>
+                        <li><strong>Large:</strong> 12, 13, 14</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Pants Sizes:</strong>
+                    <ul class="small text-muted mb-0">
+                        <li><strong>Slim:</strong> 28, 30, 32</li>
+                        <li><strong>Regular:</strong> 34, 36, 38</li>
+                        <li><strong>Plus:</strong> 40, 42, 44</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="bi bi-lightbulb"></i> Smart Features</h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info mb-0">
+                    <small>
+                        <i class="bi bi-magic"></i>
+                        <strong>Auto-Assignment:</strong> When you create a size group, existing products with matching sizes will be automatically assigned to this group for better inventory management.
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="bi bi-gear"></i> Guidelines</h6>
+            </div>
+            <div class="card-body">
+                <ul class="small text-muted mb-0">
+                    <li>Group compatible sizes together</li>
+                    <li>Use clear, descriptive names</li>
+                    <li>Consider manufacturing compatibility</li>
+                    <li>Keep groups logical and manageable</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-format sizes input
+    const sizesInput = document.getElementById('sizes');
+    if (sizesInput) {
+        sizesInput.addEventListener('blur', function() {
+            if (this.value) {
+                // Clean up the sizes input - remove extra spaces, normalize commas
+                const sizes = this.value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                this.value = sizes.join(', ');
+            }
+        });
+        
+        // Show preview of sizes as badges
+        sizesInput.addEventListener('input', function() {
+            const preview = document.getElementById('sizes-preview');
+            if (preview) {
+                const sizes = this.value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                preview.innerHTML = sizes.map(size => 
+                    `<span class="badge bg-light text-dark me-1">${size}</span>`
+                ).join('');
+            }
+        });
+    }
+    
+    // Auto-capitalize first letter of size group name
+    const nameInput = document.getElementById('name');
+    if (nameInput) {
+        nameInput.addEventListener('blur', function() {
+            if (this.value) {
+                this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1).toLowerCase();
+            }
+        });
+    }
+    
+    // Form validation
+    const form = document.querySelector('.needs-validation');
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+});
+</script>
+{% endblock %}

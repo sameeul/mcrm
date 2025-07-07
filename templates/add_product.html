@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Add Product - Secure Order Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-plus-square"></i> Add New Product</h1>
+    <a href="{{ url_for('main.inventory') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Inventory
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-box-seam"></i> Product Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" class="needs-validation" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.product_type_id.label(class="form-label") }}
+                        {{ form.product_type_id(class="form-control" + (" is-invalid" if form.product_type_id.errors else "")) }}
+                        {% if form.product_type_id.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.product_type_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Select the product category/type
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="Enter product name") }}
+                        {% if form.name.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Product name/style (e.g., "Summer Dress", "Casual Shirt", "Slim Jeans")
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.product_code.label(class="form-label") }}
+                            {{ form.product_code(class="form-control" + (" is-invalid" if form.product_code.errors else ""), placeholder="Enter product code") }}
+                            {% if form.product_code.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.product_code.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Unique product code (1-5 characters, letters/numbers only)
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.size.label(class="form-label") }}
+                            {{ form.size(class="form-control" + (" is-invalid" if form.size.errors else ""), placeholder="Enter size") }}
+                            {% if form.size.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.size.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Size (e.g., "38", "40", "S", "M", "L")
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.size_group_id.label(class="form-label") }}
+                        {{ form.size_group_id(class="form-control" + (" is-invalid" if form.size_group_id.errors else "")) }}
+                        {% if form.size_group_id.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.size_group_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Optional: Assign to a size group for inventory sharing
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.price.label(class="form-label") }}
+                            <div class="input-group">
+                                <span class="input-group-text">{{ CURRENCY_SYMBOL }}</span>
+                                {{ form.price(class="form-control" + (" is-invalid" if form.price.errors else ""), step="1", min="1", placeholder="0") }}
+                                {% if form.price.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.price.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-text">
+                                Price must be greater than {{ CURRENCY_SYMBOL }}0
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.quantity.label(class="form-label") }}
+                            {{ form.quantity(class="form-control" + (" is-invalid" if form.quantity.errors else ""), min="0", placeholder="0") }}
+                            {% if form.quantity.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.quantity.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Initial stock quantity (can be 0)
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i> Add Product
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="bi bi-info-circle"></i> Product Guidelines</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Product Name:</strong>
+                    <ul class="small text-muted mb-0">
+                        <li>General product type</li>
+                        <li>1-100 characters</li>
+                        <li>Descriptive and clear</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Product Code & Size:</strong>
+                    <ul class="small text-muted mb-0">
+                        <li>Unique product code (1-5 chars)</li>
+                        <li>Letters and numbers only</li>
+                        <li>Compatible sizes share inventory</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Pricing:</strong>
+                    <ul class="small text-muted mb-0">
+                        <li>Must be greater than {{ CURRENCY_SYMBOL }}0</li>
+                        <li>Use whole numbers only</li>
+                        <li>Consider market rates</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Stock Quantity:</strong>
+                    <ul class="small text-muted mb-0">
+                        <li>Can start with 0</li>
+                        <li>Update as needed</li>
+                        <li>Low stock alerts at &lt;10</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="bi bi-lightbulb"></i> Size Grouping</h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info mb-0">
+                    <small>
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Smart Sizing:</strong> Sizes 38 & 40 (dresses), or S & M (shirts) can share raw materials. The system automatically groups compatible sizes.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-format price input (whole numbers only)
+    const priceInput = document.getElementById('price');
+    if (priceInput) {
+        priceInput.addEventListener('blur', function() {
+            if (this.value && !isNaN(this.value)) {
+                this.value = Math.round(parseFloat(this.value));
+            }
+        });
+    }
+    
+    // Validate quantity
+    const quantityInput = document.getElementById('quantity');
+    if (quantityInput) {
+        quantityInput.addEventListener('input', function() {
+            if (parseInt(this.value) < 0) {
+                this.value = 0;
+            }
+        });
+    }
+    
+    // Size input suggestions
+    const sizeInput = document.getElementById('size');
+    if (sizeInput) {
+        sizeInput.addEventListener('focus', function() {
+            // You could add size suggestions here based on product name
+        });
+    }
+});
+</script>
+{% endblock %}

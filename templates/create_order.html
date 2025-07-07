@@ -1,0 +1,1007 @@
+{% extends "base.html" %}
+
+{% block title %}Create Order - Secure Order Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-cart-plus"></i> Create New Order</h1>
+    <a href="{{ url_for('main.orders') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Orders
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <form method="POST" class="needs-validation" novalidate id="orderForm">
+            {{ form.hidden_tag() }}
+            {{ form.products_data() }}
+            
+            <!-- Customer Information Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="bi bi-person-fill"></i> Customer Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.customer_name.label(class="form-label") }}
+                            {{ form.customer_name(class="form-control" + (" is-invalid" if form.customer_name.errors else "")) }}
+                            {% if form.customer_name.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.customer_name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.customer_phone.label(class="form-label") }}
+                            {{ form.customer_phone(class="form-control" + (" is-invalid" if form.customer_phone.errors else ""), placeholder="e.g., +8801XXXXXXXXX") }}
+                            {% if form.customer_phone.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.customer_phone.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.customer_address.label(class="form-label") }}
+                        {{ form.customer_address(class="form-control" + (" is-invalid" if form.customer_address.errors else ""), rows="3", placeholder="Enter detailed address") }}
+                        {% if form.customer_address.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.customer_address.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Delivery Location Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="bi bi-geo-alt-fill"></i> Delivery Location</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form.city_id.label(class="form-label") }}
+                            {{ form.city_id(class="form-select" + (" is-invalid" if form.city_id.errors else ""), id="city_id") }}
+                            {% if form.city_id.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.city_id.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <span id="city-loading" class="d-none">
+                                    <i class="bi bi-arrow-clockwise spin"></i> Loading cities...
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            {{ form.zone_id.label(class="form-label") }}
+                            {{ form.zone_id(class="form-select" + (" is-invalid" if form.zone_id.errors else ""), id="zone_id", disabled=true) }}
+                            {% if form.zone_id.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.zone_id.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <span id="zone-loading" class="d-none">
+                                    <i class="bi bi-arrow-clockwise spin"></i> Loading zones...
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            {{ form.area_id.label(class="form-label") }}
+                            {{ form.area_id(class="form-select" + (" is-invalid" if form.area_id.errors else ""), id="area_id", disabled=true) }}
+                            {% if form.area_id.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.area_id.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <span id="area-loading" class="d-none">
+                                    <i class="bi bi-arrow-clockwise spin"></i> Loading areas...
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Location Selection:</strong> Select city first, then zone, then area for accurate delivery addressing.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product Selection Section -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="bi bi-box-seam"></i> Product Selection</h5>
+                    <button type="button" class="btn btn-success btn-sm" id="addProductBtn">
+                        <i class="bi bi-plus-circle"></i> Add Product
+                    </button>
+                </div>
+                <div class="card-body">
+                    <!-- Products validation errors -->
+                    {% if form.products_data.errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.products_data.errors %}
+                                {{ error }}<br>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Product rows container -->
+                    <div id="productRows">
+                        <div class="text-center text-muted py-4" id="noProductsMessage">
+                            <i class="bi bi-box"></i>
+                            <p class="mb-2">No products selected</p>
+                            <small>Click "Add Product" to start building your order</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Product row template (hidden) -->
+                    <div id="productRowTemplate" class="d-none">
+                        <div class="product-row border rounded p-3 mb-3">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <label class="form-label">Product</label>
+                                    <select class="form-select product-select" required>
+                                        <option value="">Select a product...</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select a product</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Quantity</label>
+                                    <input type="number" class="form-control quantity-input" min="1" value="1" required>
+                                    <div class="invalid-feedback">Please enter a valid quantity</div>
+                                    <small class="form-text text-muted stock-info"></small>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Subtotal</label>
+                                    <div class="form-control-plaintext fw-bold subtotal">$0.00</div>
+                                </div>
+                                <div class="col-md-1">
+                                    <label class="form-label">&nbsp;</label>
+                                    <button type="button" class="btn btn-outline-danger btn-sm d-block remove-product-btn">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order Calculation Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="bi bi-calculator"></i> Order Calculation</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.delivery_charge.label(class="form-label") }}
+                            <div class="input-group">
+                                <span class="input-group-text">{{ CURRENCY_SYMBOL }}</span>
+                                {{ form.delivery_charge(class="form-control" + (" is-invalid" if form.delivery_charge.errors else ""), placeholder="0", step="1", min="0") }}
+                                {% if form.delivery_charge.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.delivery_charge.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-text">Enter delivery charges (if any)</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.discount.label(class="form-label") }}
+                            <div class="input-group">
+                                <span class="input-group-text">{{ CURRENCY_SYMBOL }}</span>
+                                {{ form.discount(class="form-control" + (" is-invalid" if form.discount.errors else ""), placeholder="0", step="1", min="0") }}
+                                {% if form.discount.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.discount.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-text">Enter discount amount (if any)</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Order Summary Breakdown -->
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-3">Order Summary</h6>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Products Subtotal:</span>
+                                        <span id="productsSubtotal" class="fw-medium">$0.00</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Delivery Charges:</span>
+                                        <span id="deliveryChargeDisplay" class="fw-medium">$0.00</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Discount:</span>
+                                        <span id="discountDisplay" class="fw-medium text-danger">-$0.00</span>
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="h6">Final Total:</span>
+                                        <span id="finalTotal" class="h6 text-success">$0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Submit Section -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </button>
+                        <div class="text-end">
+                            <div class="h5 mb-2">Total: <span id="orderTotal" class="text-success">$0.00</span></div>
+                            <button type="submit" class="btn btn-success btn-lg" id="submitOrderBtn">
+                                <i class="bi bi-cart-check"></i> Create Order
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Order Information Sidebar -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="bi bi-info-circle"></i> Order Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Created By:</strong><br>
+                    <span class="text-muted">{{ current_user.username }}</span>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Order Date:</strong><br>
+                    <span class="text-muted">{{ moment().format('MMMM D, YYYY') if moment else 'Today' }}</span>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Status:</strong><br>
+                    <span class="badge bg-warning">Pending</span>
+                </div>
+                
+                <hr>
+                
+                <div class="alert alert-info">
+                    <i class="bi bi-lightbulb"></i>
+                    <strong>Note:</strong> Orders are automatically set to "Pending" status and will reduce inventory upon creation.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Summary -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="bi bi-receipt"></i> Order Summary</h6>
+            </div>
+            <div class="card-body">
+                <div id="orderSummary">
+                    <div class="text-center text-muted py-3" id="emptySummary">
+                        <i class="bi bi-cart-x"></i>
+                        <p class="mb-0">No items in order</p>
+                    </div>
+                </div>
+                <hr class="d-none" id="summaryDivider">
+                <div class="d-flex justify-content-between fw-bold d-none" id="summaryTotal">
+                    <span>Total:</span>
+                    <span id="summaryTotalAmount">$0.00</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Available Products Summary -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="bi bi-box-seam"></i> Available Products</h6>
+            </div>
+            <div class="card-body">
+                <div class="small">
+                    <div id="productCount">Loading products...</div>
+                </div>
+                <div class="mt-2">
+                    <a href="{{ url_for('main.inventory') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye"></i> View All Inventory
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Location Help -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="bi bi-question-circle"></i> Location Help</h6>
+            </div>
+            <div class="card-body">
+                <div class="small">
+                    <div class="mb-2">
+                        <strong>City:</strong> Select the delivery city first
+                    </div>
+                    <div class="mb-2">
+                        <strong>Zone:</strong> Choose the specific zone within the city
+                    </div>
+                    <div class="mb-2">
+                        <strong>Area:</strong> Pick the exact area for delivery
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted">
+                        Location data is powered by Pathao for accurate delivery addressing.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Product Selection Helper -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h6><i class="bi bi-question-circle"></i> Need Help?</h6>
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong>Customer Info:</strong><br>
+                        <small class="text-muted">Enter complete customer details for delivery</small>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Location Selection:</strong><br>
+                        <small class="text-muted">Use cascading dropdowns for precise addressing</small>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Product Selection:</strong><br>
+                        <small class="text-muted">Add multiple products to create comprehensive orders</small>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Order Processing:</strong><br>
+                        <small class="text-muted">Orders are processed immediately upon creation</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form elements
+    const orderForm = document.getElementById('orderForm');
+    const citySelect = document.getElementById('city_id');
+    const zoneSelect = document.getElementById('zone_id');
+    const areaSelect = document.getElementById('area_id');
+    const productsDataField = document.getElementById('products_data');
+    const addProductBtn = document.getElementById('addProductBtn');
+    const productRows = document.getElementById('productRows');
+    const noProductsMessage = document.getElementById('noProductsMessage');
+    const productRowTemplate = document.getElementById('productRowTemplate');
+    const submitOrderBtn = document.getElementById('submitOrderBtn');
+    const orderTotal = document.getElementById('orderTotal');
+    
+    // Order calculation elements
+    const deliveryChargeInput = document.getElementById('delivery_charge');
+    const discountInput = document.getElementById('discount');
+    const productsSubtotal = document.getElementById('productsSubtotal');
+    const deliveryChargeDisplay = document.getElementById('deliveryChargeDisplay');
+    const discountDisplay = document.getElementById('discountDisplay');
+    const finalTotal = document.getElementById('finalTotal');
+    
+    // Summary elements
+    const orderSummary = document.getElementById('orderSummary');
+    const emptySummary = document.getElementById('emptySummary');
+    const summaryDivider = document.getElementById('summaryDivider');
+    const summaryTotal = document.getElementById('summaryTotal');
+    const summaryTotalAmount = document.getElementById('summaryTotalAmount');
+    
+    // Loading indicators
+    const cityLoading = document.getElementById('city-loading');
+    const zoneLoading = document.getElementById('zone-loading');
+    const areaLoading = document.getElementById('area-loading');
+    
+    // Data storage
+    let availableProducts = [];
+    let selectedProducts = [];
+    let productCounter = 0;
+    
+    // Initialize
+    loadCities();
+    loadProducts();
+    
+    // Location handling
+    citySelect.addEventListener('change', function() {
+        const cityId = this.value;
+        if (cityId && cityId !== '0') {
+            loadZones(cityId);
+        } else {
+            resetZones();
+            resetAreas();
+        }
+    });
+    
+    zoneSelect.addEventListener('change', function() {
+        const zoneId = this.value;
+        if (zoneId && zoneId !== '0') {
+            loadAreas(zoneId);
+        } else {
+            resetAreas();
+        }
+    });
+    
+    // Product management
+    addProductBtn.addEventListener('click', addProductRow);
+    
+    // Order calculation event listeners
+    deliveryChargeInput.addEventListener('input', updateOrderCalculations);
+    discountInput.addEventListener('input', updateOrderCalculations);
+    
+    // Form submission
+    orderForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (validateForm()) {
+            updateProductsData();
+            this.submit();
+        }
+    });
+    
+    // Load cities function
+    function loadCities() {
+        cityLoading.classList.remove('d-none');
+        
+        fetch('/api/cities')
+            .then(response => response.json())
+            .then(data => {
+                citySelect.innerHTML = '<option value="0">Select City</option>';
+                data.forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city.id;
+                    option.textContent = city.name;
+                    citySelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading cities:', error);
+                citySelect.innerHTML = '<option value="0">Error loading cities</option>';
+            })
+            .finally(() => {
+                cityLoading.classList.add('d-none');
+            });
+    }
+    
+    // Load zones function
+    function loadZones(cityId) {
+        zoneLoading.classList.remove('d-none');
+        zoneSelect.disabled = true;
+        
+        fetch(`/api/zones/${cityId}`)
+            .then(response => response.json())
+            .then(data => {
+                zoneSelect.innerHTML = '<option value="0">Select Zone</option>';
+                data.forEach(zone => {
+                    const option = document.createElement('option');
+                    option.value = zone.id;
+                    option.textContent = zone.name;
+                    zoneSelect.appendChild(option);
+                });
+                zoneSelect.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error loading zones:', error);
+                zoneSelect.innerHTML = '<option value="0">Error loading zones</option>';
+            })
+            .finally(() => {
+                zoneLoading.classList.add('d-none');
+            });
+    }
+    
+    // Load areas function
+    function loadAreas(zoneId) {
+        areaLoading.classList.remove('d-none');
+        areaSelect.disabled = true;
+        
+        fetch(`/api/areas/${zoneId}`)
+            .then(response => response.json())
+            .then(data => {
+                areaSelect.innerHTML = '<option value="0">Select Area</option>';
+                data.forEach(area => {
+                    const option = document.createElement('option');
+                    option.value = area.id;
+                    option.textContent = area.name;
+                    if (!area.home_delivery_available) {
+                        option.textContent += ' (Pickup Only)';
+                    }
+                    areaSelect.appendChild(option);
+                });
+                areaSelect.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error loading areas:', error);
+                areaSelect.innerHTML = '<option value="0">Error loading areas</option>';
+            })
+            .finally(() => {
+                areaLoading.classList.add('d-none');
+            });
+    }
+    
+    // Load products function
+    function loadProducts() {
+        fetch('/api/products')
+            .then(response => response.json())
+            .then(data => {
+                availableProducts = data;
+                updateProductCount();
+            })
+            .catch(error => {
+                console.error('Error loading products:', error);
+                document.getElementById('productCount').textContent = 'Error loading products';
+            });
+    }
+    
+    // Add product row
+    function addProductRow() {
+        const rowClone = productRowTemplate.cloneNode(true);
+        rowClone.id = `productRow_${productCounter}`;
+        rowClone.classList.remove('d-none');
+        
+        const productSelect = rowClone.querySelector('.product-select');
+        const quantityInput = rowClone.querySelector('.quantity-input');
+        const subtotalDiv = rowClone.querySelector('.subtotal');
+        const stockInfo = rowClone.querySelector('.stock-info');
+        const removeBtn = rowClone.querySelector('.remove-product-btn');
+        
+        // Populate product options
+        populateProductSelect(productSelect);
+        
+        // Event listeners
+        productSelect.addEventListener('change', function() {
+            updateProductRow(rowClone);
+            updateOrderSummary();
+            updateOrderCalculations();
+        });
+        
+        quantityInput.addEventListener('input', function() {
+            updateProductRow(rowClone);
+            updateOrderSummary();
+            updateOrderCalculations();
+        });
+        
+        removeBtn.addEventListener('click', function() {
+            removeProductRow(rowClone);
+        });
+        
+        // Add to DOM
+        productRows.appendChild(rowClone);
+        noProductsMessage.classList.add('d-none');
+        
+        productCounter++;
+    }
+    
+    // Populate product select options
+    function populateProductSelect(selectElement) {
+        selectElement.innerHTML = '<option value="">Select a product...</option>';
+        
+        availableProducts.forEach(product => {
+            // Check if product is already selected
+            const isSelected = selectedProducts.some(p => p.id === product.id);
+            if (!isSelected) {
+                const option = document.createElement('option');
+                option.value = product.id;
+                option.textContent = product.display_text;
+                option.dataset.price = product.price;
+                option.dataset.stock = product.stock;
+                option.dataset.totalAvailable = product.total_available;
+                selectElement.appendChild(option);
+            }
+        });
+    }
+    
+    // Update product row calculations
+    function updateProductRow(rowElement) {
+        const productSelect = rowElement.querySelector('.product-select');
+        const quantityInput = rowElement.querySelector('.quantity-input');
+        const subtotalDiv = rowElement.querySelector('.subtotal');
+        const stockInfo = rowElement.querySelector('.stock-info');
+        
+        const selectedOption = productSelect.options[productSelect.selectedIndex];
+        
+        if (selectedOption.value) {
+            const price = parseFloat(selectedOption.dataset.price);
+            const stock = parseInt(selectedOption.dataset.stock);
+            const totalAvailable = parseInt(selectedOption.dataset.totalAvailable);
+            const quantity = parseInt(quantityInput.value) || 0;
+            
+            // Update quantity limits
+            quantityInput.max = totalAvailable;
+            
+            // Update stock info
+            stockInfo.textContent = `Max available: ${totalAvailable}`;
+            
+            // Update subtotal
+            const subtotal = price * quantity;
+            subtotalDiv.textContent = `{{ CURRENCY_SYMBOL }}${Math.round(subtotal)}`;
+            
+            // Validation
+            if (quantity > totalAvailable) {
+                quantityInput.setCustomValidity(`Only ${totalAvailable} items available`);
+                stockInfo.textContent = `Only ${totalAvailable} items available!`;
+                stockInfo.classList.add('text-danger');
+            } else {
+                quantityInput.setCustomValidity('');
+                stockInfo.classList.remove('text-danger');
+            }
+        } else {
+            subtotalDiv.textContent = '{{ CURRENCY_SYMBOL }}0';
+            stockInfo.textContent = '';
+            quantityInput.setCustomValidity('');
+        }
+        
+        updateSelectedProducts();
+    }
+    
+    // Remove product row
+    function removeProductRow(rowElement) {
+        rowElement.remove();
+        updateSelectedProducts();
+        updateOrderSummary();
+        updateOrderCalculations();
+        // Show no products message if no rows left
+        const remainingRows = productRows.querySelectorAll('.product-row:not(.d-none)');
+        if (remainingRows.length === 0) {
+            noProductsMessage.classList.remove('d-none');
+        }
+        
+        // Refresh all product selects to show newly available products
+        refreshAllProductSelects();
+    }
+    
+    // Update selected products array
+    function updateSelectedProducts() {
+        selectedProducts = [];
+        const productRowElements = productRows.querySelectorAll('.product-row:not(.d-none)');
+        
+        productRowElements.forEach(row => {
+            const productSelect = row.querySelector('.product-select');
+            const quantityInput = row.querySelector('.quantity-input');
+            
+            if (productSelect.value && quantityInput.value) {
+                const selectedOption = productSelect.options[productSelect.selectedIndex];
+                selectedProducts.push({
+                    id: parseInt(productSelect.value),
+                    name: selectedOption.textContent.split(' - ')[0],
+                    price: parseFloat(selectedOption.dataset.price),
+                    quantity: parseInt(quantityInput.value),
+                    subtotal: parseFloat(selectedOption.dataset.price) * parseInt(quantityInput.value)
+                });
+            }
+        });
+    }
+    
+    // Refresh all product selects
+    function refreshAllProductSelects() {
+        const productRowElements = productRows.querySelectorAll('.product-row:not(.d-none)');
+        productRowElements.forEach(row => {
+            const productSelect = row.querySelector('.product-select');
+            const currentValue = productSelect.value;
+            populateProductSelect(productSelect);
+            productSelect.value = currentValue; // Restore selection
+        });
+    }
+    
+    // Update order summary
+    function updateOrderSummary() {
+        updateSelectedProducts();
+        
+        if (selectedProducts.length === 0) {
+            emptySummary.classList.remove('d-none');
+            summaryDivider.classList.add('d-none');
+            summaryTotal.classList.add('d-none');
+            orderTotal.textContent = '{{ CURRENCY_SYMBOL }}0';
+            summaryTotalAmount.textContent = '{{ CURRENCY_SYMBOL }}0';
+            return;
+        }
+        
+        emptySummary.classList.add('d-none');
+        summaryDivider.classList.remove('d-none');
+        summaryTotal.classList.remove('d-none');
+        
+        // Build summary HTML
+        let summaryHTML = '';
+        let total = 0;
+        
+        selectedProducts.forEach(product => {
+            total += product.subtotal;
+            summaryHTML += `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="small">
+                        <div class="fw-medium">${product.name}</div>
+                        <div class="text-muted">${product.quantity} × {{ CURRENCY_SYMBOL }}${Math.round(product.price)}</div>
+                    </div>
+                    <div class="fw-medium">{{ CURRENCY_SYMBOL }}${Math.round(product.subtotal)}</div>
+                </div>
+            `;
+        });
+        
+        orderSummary.innerHTML = summaryHTML;
+        orderTotal.textContent = `{{ CURRENCY_SYMBOL }}${Math.round(total)}`;
+        summaryTotalAmount.textContent = `{{ CURRENCY_SYMBOL }}${Math.round(total)}`;
+    }
+    
+    // Update product count display
+    function updateProductCount() {
+        const count = availableProducts.length;
+        document.getElementById('productCount').innerHTML = `
+            <strong>${count}</strong> products available for ordering
+        `;
+    }
+    
+    // Update products data for form submission
+    function updateProductsData() {
+        updateSelectedProducts();
+        const productsData = selectedProducts.map(product => ({
+            product_id: product.id,
+            quantity: product.quantity
+        }));
+        productsDataField.value = JSON.stringify(productsData);
+    }
+    
+    // Form validation with detailed error feedback
+    function validateForm() {
+        updateSelectedProducts();
+        let errors = [];
+        let isValid = true;
+        
+        // Check if products are selected
+        if (selectedProducts.length === 0) {
+            errors.push('Please add at least one product to the order.');
+            isValid = false;
+        }
+        
+        // Validate customer information
+        const customerName = document.getElementById('customer_name');
+        const customerPhone = document.getElementById('customer_phone');
+        const customerAddress = document.getElementById('customer_address');
+        
+        if (!customerName.value.trim()) {
+            errors.push('Customer name is required.');
+            customerName.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            customerName.classList.remove('is-invalid');
+        }
+        
+        if (!customerPhone.value.trim()) {
+            errors.push('Customer phone is required.');
+            customerPhone.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            customerPhone.classList.remove('is-invalid');
+        }
+        
+        if (!customerAddress.value.trim()) {
+            errors.push('Customer address is required.');
+            customerAddress.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            customerAddress.classList.remove('is-invalid');
+        }
+        
+        // Validate location selection
+        if (!citySelect.value || citySelect.value === '0') {
+            errors.push('Please select a delivery city.');
+            citySelect.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            citySelect.classList.remove('is-invalid');
+        }
+        
+        if (!zoneSelect.value || zoneSelect.value === '0') {
+            errors.push('Please select a delivery zone.');
+            zoneSelect.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            zoneSelect.classList.remove('is-invalid');
+        }
+        
+        if (!areaSelect.value || areaSelect.value === '0') {
+            errors.push('Please select a delivery area.');
+            areaSelect.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            areaSelect.classList.remove('is-invalid');
+        }
+        
+        // Validate each product row
+        const productRowElements = productRows.querySelectorAll('.product-row:not(.d-none)');
+        let productRowIndex = 1;
+        
+        productRowElements.forEach(row => {
+            const productSelect = row.querySelector('.product-select');
+            const quantityInput = row.querySelector('.quantity-input');
+            
+            if (!productSelect.value) {
+                errors.push(`Product row ${productRowIndex}: Please select a product.`);
+                productSelect.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                productSelect.classList.remove('is-invalid');
+            }
+            
+            if (!quantityInput.value || quantityInput.value < 1) {
+                errors.push(`Product row ${productRowIndex}: Please enter a valid quantity.`);
+                quantityInput.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                // Check stock availability
+                const selectedOption = productSelect.options[productSelect.selectedIndex];
+                if (selectedOption.value) {
+                    const totalAvailable = parseInt(selectedOption.dataset.totalAvailable);
+                    const quantity = parseInt(quantityInput.value);
+                    
+                    if (quantity > totalAvailable) {
+                        errors.push(`Product row ${productRowIndex}: Only ${totalAvailable} items available, but ${quantity} requested.`);
+                        quantityInput.classList.add('is-invalid');
+                        isValid = false;
+                    } else {
+                        quantityInput.classList.remove('is-invalid');
+                    }
+                }
+            }
+            
+            productRowIndex++;
+        });
+        
+        // Show validation errors if any
+        if (!isValid) {
+            let errorMessage = 'Please fix the following errors:\n\n';
+            errors.forEach((error, index) => {
+                errorMessage += `${index + 1}. ${error}\n`;
+            });
+            
+            alert(errorMessage);
+            
+            // Scroll to first error element
+            const firstInvalidElement = document.querySelector('.is-invalid');
+            if (firstInvalidElement) {
+                firstInvalidElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstInvalidElement.focus();
+            }
+        }
+        
+        return isValid;
+    }
+    
+    // Reset zones
+    function resetZones() {
+        zoneSelect.innerHTML = '<option value="0">Select Zone</option>';
+        zoneSelect.disabled = true;
+    }
+    
+    // Reset areas
+    function resetAreas() {
+        areaSelect.innerHTML = '<option value="0">Select Area</option>';
+        areaSelect.disabled = true;
+    }
+    
+    // Update order calculations with delivery charges and discount
+    function updateOrderCalculations() {
+        updateSelectedProducts();
+        
+        // Get values
+        const deliveryCharge = parseFloat(deliveryChargeInput.value) || 0;
+        const discount = parseFloat(discountInput.value) || 0;
+        
+        // Calculate products subtotal
+        const productsSubtotalAmount = selectedProducts.reduce((sum, product) => sum + product.subtotal, 0);
+        
+        // Calculate final total
+        const finalTotalAmount = productsSubtotalAmount + deliveryCharge - discount;
+        
+        // Update displays
+        productsSubtotal.textContent = `{{ CURRENCY_SYMBOL }}${Math.round(productsSubtotalAmount)}`;
+        deliveryChargeDisplay.textContent = `{{ CURRENCY_SYMBOL }}${Math.round(deliveryCharge)}`;
+        discountDisplay.textContent = `-{{ CURRENCY_SYMBOL }}${Math.round(discount)}`;
+        finalTotal.textContent = `{{ CURRENCY_SYMBOL }}${Math.round(finalTotalAmount)}`;
+        orderTotal.textContent = `{{ CURRENCY_SYMBOL }}${Math.round(finalTotalAmount)}`;
+        summaryTotalAmount.textContent = `{{ CURRENCY_SYMBOL }}${Math.round(finalTotalAmount)}`;
+        
+        // Ensure final total is not negative
+        if (finalTotalAmount < 0) {
+            finalTotal.classList.add('text-danger');
+            finalTotal.classList.remove('text-success');
+            orderTotal.classList.add('text-danger');
+            orderTotal.classList.remove('text-success');
+        } else {
+            finalTotal.classList.remove('text-danger');
+            finalTotal.classList.add('text-success');
+            orderTotal.classList.remove('text-danger');
+            orderTotal.classList.add('text-success');
+        }
+    }
+});
+</script>
+
+<style>
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.product-row {
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.product-row:hover {
+    background-color: #e9ecef;
+}
+
+.remove-product-btn {
+    transition: all 0.2s ease;
+}
+
+.remove-product-btn:hover {
+    transform: scale(1.1);
+}
+
+#orderTotal {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.stock-info.text-danger {
+    font-weight: bold;
+}
+
+#orderSummary .fw-medium {
+    font-size: 0.9rem;
+}
+
+#submitOrderBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+</style>
+{% endblock %}

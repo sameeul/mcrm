@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Product Types - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-tags"></i> Product Types Management</h1>
+    <a href="{{ url_for('main.add_product_type') }}" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Add Product Type
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5><i class="bi bi-list-ul"></i> Product Types ({{ product_types.total }} total)</h5>
+    </div>
+    <div class="card-body">
+        {% if product_types.items %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Products Count</th>
+                            <th>Size Groups</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product_type in product_types.items %}
+                        <tr>
+                            <td>{{ product_type.id }}</td>
+                            <td>
+                                <strong>{{ product_type.name }}</strong>
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ product_type.description or 'No description' }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">{{ product_type.products|length }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ product_type.size_groups|length }}</span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{{ url_for('main.edit_product_type', product_type_id=product_type.id) }}" 
+                                       class="btn btn-outline-primary" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    {% if not product_type.products %}
+                                    <a href="{{ url_for('main.delete_product_type', product_type_id=product_type.id) }}" 
+                                       class="btn btn-outline-danger" 
+                                       onclick="return confirm('Are you sure you want to delete this product type?')"
+                                       title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                    {% else %}
+                                    <button class="btn btn-outline-secondary" disabled title="Cannot delete - has products">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if product_types.pages > 1 %}
+            <nav aria-label="Product types pagination">
+                <ul class="pagination justify-content-center">
+                    {% if product_types.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.product_types', page=product_types.prev_num) }}">Previous</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for page_num in product_types.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != product_types.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('main.product_types', page=page_num) }}">{{ page_num }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if product_types.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.product_types', page=product_types.next_num) }}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-tags display-1 text-muted"></i>
+                <h4 class="text-muted mt-3">No Product Types Found</h4>
+                <p class="text-muted">Start by adding your first product type.</p>
+                <a href="{{ url_for('main.add_product_type') }}" class="btn btn-success">
+                    <i class="bi bi-plus-circle"></i> Add Product Type
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="bi bi-info-circle"></i> About Product Types</h6>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-2">
+                    Product types help organize your inventory into categories like:
+                </p>
+                <ul class="small text-muted">
+                    <li><strong>Dress</strong> - Evening dresses, casual dresses, etc.</li>
+                    <li><strong>Shirt</strong> - T-shirts, dress shirts, blouses</li>
+                    <li><strong>Pants</strong> - Jeans, trousers, shorts</li>
+                    <li><strong>Jacket</strong> - Coats, blazers, hoodies</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="bi bi-lightbulb"></i> Management Tips</h6>
+            </div>
+            <div class="card-body">
+                <ul class="small text-muted mb-0">
+                    <li>Create broad categories that group similar products</li>
+                    <li>Use clear, descriptive names</li>
+                    <li>Product types with existing products cannot be deleted</li>
+                    <li>Each product type can have multiple size groups</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

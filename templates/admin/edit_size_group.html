@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Size Group - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-pencil-square"></i> Edit Size Group</h1>
+    <a href="{{ url_for('main.size_groups') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Size Groups
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-rulers"></i> Size Group Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" class="needs-validation" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.product_type_id.label(class="form-label") }}
+                        {{ form.product_type_id(class="form-control" + (" is-invalid" if form.product_type_id.errors else "")) }}
+                        {% if form.product_type_id.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.product_type_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Select the product type this size group belongs to
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="Enter size group name") }}
+                        {% if form.name.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Size group name (e.g., "Small", "Medium", "Large", "Numeric")
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.sizes.label(class="form-label") }}
+                        {{ form.sizes(class="form-control" + (" is-invalid" if form.sizes.errors else ""), placeholder="Enter sizes separated by commas") }}
+                        {% if form.sizes.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.sizes.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Enter sizes separated by commas (e.g., "S, M, L" or "34, 36, 38, 40")
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows="3", placeholder="Enter description (optional)") }}
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.description.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Optional description to help identify this size group
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Update Size Group
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="bi bi-info-circle"></i> Current Usage</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Product Type:</strong>
+                    <span class="badge bg-secondary ms-2">{{ size_group.product_type.name }}</span>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Current Sizes:</strong>
+                    <div class="mt-1">
+                        {% for size in size_group.get_sizes() %}
+                            <span class="badge bg-light text-dark me-1">{{ size }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Products:</strong>
+                    <span class="badge bg-primary ms-2">{{ size_group.products|length }}</span>
+                    {% if size_group.products %}
+                        <div class="small text-muted mt-1">
+                            This size group has {{ size_group.products|length }} product(s) assigned to it.
+                        </div>
+                    {% endif %}
+                </div>
+                
+                {% if size_group.products %}
+                <div class="alert alert-warning">
+                    <small>
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Note:</strong> This size group cannot be deleted because it has products assigned to it.
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="bi bi-lightbulb"></i> Edit Guidelines</h6>
+            </div>
+            <div class="card-body">
+                <ul class="small text-muted mb-0">
+                    <li>Changes will affect all products in this group</li>
+                    <li>Adding sizes may auto-assign existing products</li>
+                    <li>Removing sizes may unassign products</li>
+                    <li>Consider the impact on inventory management</li>
+                </ul>
+            </div>
+        </div>
+        
+        {% if size_group.products %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="bi bi-box-seam"></i> Assigned Products</h6>
+            </div>
+            <div class="card-body">
+                {% for product in size_group.products[:5] %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <small class="fw-bold">{{ product.name }}</small>
+                        <br>
+                        <small class="text-muted">{{ product.color }} - {{ product.size }}</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-secondary">${{ "%.2f"|format(product.price) }}</span>
+                        <br>
+                        <small class="text-muted">Qty: {{ product.quantity }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+                {% if size_group.products|length > 5 %}
+                <div class="text-center">
+                    <small class="text-muted">... and {{ size_group.products|length - 5 }} more</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="bi bi-gear"></i> Size Examples</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <strong>Clothing:</strong>
+                    <small class="text-muted">XS, S, M, L, XL</small>
+                </div>
+                <div class="mb-2">
+                    <strong>Numeric:</strong>
+                    <small class="text-muted">34, 36, 38, 40, 42</small>
+                </div>
+                <div class="mb-2">
+                    <strong>Shoes:</strong>
+                    <small class="text-muted">6, 7, 8, 9, 10, 11</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-format sizes input
+    const sizesInput = document.getElementById('sizes');
+    if (sizesInput) {
+        sizesInput.addEventListener('blur', function() {
+            if (this.value) {
+                // Clean up the sizes input - remove extra spaces, normalize commas
+                const sizes = this.value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                this.value = sizes.join(', ');
+            }
+        });
+    }
+    
+    // Auto-capitalize first letter of size group name
+    const nameInput = document.getElementById('name');
+    if (nameInput) {
+        nameInput.addEventListener('blur', function() {
+            if (this.value) {
+                this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1).toLowerCase();
+            }
+        });
+    }
+    
+    // Form validation
+    const form = document.querySelector('.needs-validation');
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+});
+</script>
+{% endblock %}
