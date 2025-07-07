@@ -649,3 +649,70 @@ def api_products():
         ])
     except Exception as e:
         return jsonify({'error': 'Failed to fetch products'}), 500
+
+# User Management API Routes
+@main.route('/api/users/<int:user_id>/toggle-status', methods=['POST'])
+@login_required
+@admin_required
+def api_toggle_user_status(user_id):
+    """API endpoint to toggle user active status"""
+    try:
+        user = User.query.get_or_404(user_id)
+        
+        # Prevent admin from deactivating themselves
+        if user.id == current_user.id:
+            return jsonify({'success': False, 'message': 'Cannot deactivate your own account'}), 400
+        
+        user.is_active = not user.is_active
+        db.session.commit()
+        
+        status = 'activated' if user.is_active else 'deactivated'
+        return jsonify({'success': True, 'message': f'User {user.username} has been {status}'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': 'Failed to update user status'}), 500
+
+@main.route('/api/users/<int:user_id>/toggle-role', methods=['POST'])
+@login_required
+@admin_required
+def api_toggle_user_role(user_id):
+    """API endpoint to toggle user role between user and admin"""
+    try:
+        user = User.query.get_or_404(user_id)
+        
+        # Prevent changing own role
+        if user.id == current_user.id:
+            return jsonify({'success': False, 'message': 'Cannot change your own role'}), 400
+        
+        user.role = 'admin' if user.role == 'user' else 'user'
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': f'User {user.username} role changed to {user.role}'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': 'Failed to update user role'}), 500
+
+@main.route('/api/users/<int:user_id>/delete', methods=['DELETE'])
+@login_required
+@admin_required
+def api_delete_user(user_id):
+    """API endpoint to delete a user"""
+    try:
+        user = User.query.get_or_404(user_id)
+        
+        # Prevent admin from deleting themselves
+        if user.id == current_user.id:
+            return jsonify({'success': False, 'message': 'Cannot delete your own account'}), 400
+        
+        # Check if user has associated orders
+        if user.orders:
+            return jsonify({'success': False, 'message': 'Cannot delete user with existing orders'}), 400
+        
+        username = user.username
+        db.session.delete(user)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': f'User {username} has been deleted'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': 'Failed to delete user'}), 500
