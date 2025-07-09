@@ -155,7 +155,7 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)  # Specific product name/style
     product_type_id = db.Column(db.Integer, db.ForeignKey('product_type.id'), nullable=False)
-    product_code = db.Column(db.String(5), unique=True, nullable=False)
+    product_code = db.Column(db.String(5), nullable=False)
     size = db.Column(db.String(20), nullable=False)
     size_group_id = db.Column(db.Integer, db.ForeignKey('size_group.id'))
     quantity = db.Column(db.Integer, nullable=False, default=0)
