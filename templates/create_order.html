@@ -865,8 +865,8 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSelectedProducts();
         
         // Get values
-        const deliveryCharge = parseFloat(deliveryChargeInput.value) || 0;
-        const discount = parseFloat(discountInput.value) || 0;
+        const deliveryCharge = parseInt(deliveryChargeInput.value) || 0;
+        const discount = parseInt(discountInput.value) || 0;
         
         // Calculate products subtotal
         const productsSubtotalAmount = selectedProducts.reduce((sum, product) => sum + product.subtotal, 0);

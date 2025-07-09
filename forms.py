@@ -246,12 +246,12 @@ class CreateOrderForm(FlaskForm):
     products_data = HiddenField('Products Data')
     
     # Order Financial Details
-    delivery_charge = DecimalField('Delivery Charges', validators=[
+    delivery_charge = IntegerField('Delivery Charges', validators=[
         NumberRange(min=0, message='Delivery charges cannot be negative')
-    ], places=2, default=0.00)
-    discount = DecimalField('Discount', validators=[
+    ], default=0)
+    discount = IntegerField('Discount', validators=[
         NumberRange(min=0, message='Discount cannot be negative')
-    ], places=2, default=0.00)
+    ], default=0)
     
     def __init__(self, *args, **kwargs):
         super(CreateOrderForm, self).__init__(*args, **kwargs)

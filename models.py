@@ -312,7 +312,7 @@ class Order(db.Model):
     @property
     def final_total(self):
         """Get final total including delivery charges and discount"""
-        return self.products_subtotal + self.delivery_charge - self.discount
+        return int(self.products_subtotal) + int(self.delivery_charge) - int(self.discount)
     
     def calculate_total(self):
         """Calculate total amount including delivery charges and discount"""
