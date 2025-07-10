@@ -716,3 +716,20 @@ def api_delete_user(user_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': 'Failed to delete user'}), 500
+
+@main.route('/request_shipping/<int:order_id>', methods=['POST'])
+@login_required
+def request_shipping(order_id):
+    order = Order.query.get_or_404(order_id)
+    # Only allow if not already requested and user has access
+    if not current_user.is_admin() and order.user_id != current_user.id:
+        flash('Access denied', 'error')
+        return redirect(url_for('main.orders'))
+    if order.shipping_requested:
+        flash('Shipping already requested for this order.', 'info')
+    else:
+        order.shipping_requested = True
+        order.updated_at = datetime.utcnow()
+        db.session.commit()
+        flash('Shipping has been requested for this order.', 'success')
+    return redirect(url_for('main.order_details', order_id=order.id))

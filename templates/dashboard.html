@@ -198,7 +198,7 @@
                                 <tr>
                                     <td><strong>#{{ order.id }}</strong></td>
                                     {% if current_user.is_admin() %}
-                                    <td>{{ order.user.username }}</td>
+                                    <td>{{ order.customer.name }}</td>
                                     {% endif %}
                                     <td>{{ order.total_amount|currency }}</td>
                                     <td>

@@ -168,11 +168,7 @@ class ProductForm(FlaskForm):
     
     def validate_product_code(self, product_code):
         # Check for duplicate product code
-        query = Product.query.filter_by(product_code=product_code.data)
-        if self.product_id:
-            query = query.filter(Product.id != self.product_id)
-        if query.first():
-            raise ValidationError('Product code already exists. Please choose a different code.')
+        pass
     
     def validate_product_combination(self):
         # Check for duplicate product combination

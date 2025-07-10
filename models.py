@@ -277,6 +277,7 @@ class Order(db.Model):
     city_name = db.Column(db.String(100), nullable=True)
     zone_id = db.Column(db.Integer, nullable=True)  # Pathao zone_id  
     zone_name = db.Column(db.String(100), nullable=True)
+    shipping_requested = db.Column(db.Boolean, default=False)  # Whether shipping is requested
     
     # Order Financial Details
     delivery_charge = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
