@@ -385,3 +385,41 @@ class LoginAttempt(db.Model):
     
     def __repr__(self):
         return f'<LoginAttempt {self.ip_address} - {self.success}>'
+
+class PathaoDelivery(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    consignment_id = db.Column(db.String(50), unique=True, nullable=False)  # Pathao's tracking ID
+    merchant_order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    order_status = db.Column(db.String(50), nullable=False)  # Pending, Pickup_Requested, etc.
+    delivery_fee = db.Column(db.Numeric(10, 2), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    order = db.relationship('Order', backref='pathao_delivery', lazy=True)
+    
+    @property
+    def is_delivered(self):
+        """Check if delivery is completed"""
+        return self.order_status.lower() in ['delivered', 'completed']
+    
+    @property
+    def is_pending(self):
+        """Check if delivery is still pending"""
+        return self.order_status.lower() == 'pending'
+    
+    @property
+    def is_in_transit(self):
+        """Check if delivery is in transit"""
+        transit_statuses = ['pickup_requested', 'picked_up', 'in_transit', 'out_for_delivery']
+        return self.order_status.lower().replace(' ', '_') in transit_statuses
+    
+    def update_status(self, new_status, new_delivery_fee=None):
+        """Update delivery status and optionally delivery fee"""
+        self.order_status = new_status
+        if new_delivery_fee is not None:
+            self.delivery_fee = new_delivery_fee
+        self.updated_at = datetime.utcnow()
+    
+    def __repr__(self):
+        return f'<PathaoDelivery {self.consignment_id} - {self.order_status}>'

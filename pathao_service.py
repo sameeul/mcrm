@@ -3,6 +3,7 @@ import json
 from datetime import datetime, timedelta
 from models import db, PathaoCity, PathaoZone, PathaoToken
 from flask import current_app
+import csv
 
 class PathaoService:
     BASE_URL = "https://courier-api-sandbox.pathao.com"
@@ -159,6 +160,32 @@ class PathaoService:
             return PathaoCity.query.all()
     
     @classmethod
+    def parse_address(cls, address):
+        # send a request to api/v1/address-parser as a string and get back the response
+        try:
+            access_token = cls.get_access_token()
+            if not access_token:
+                return {}
+            
+            url = f"{cls.BASE_URL}/aladdin/api/v1/address-parser"
+            headers = {
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json; charset=UTF-8"
+            }
+            payload = {"address": address}
+            
+            response = requests.post(url, headers=headers, json=payload, timeout=30)
+            response.raise_for_status()
+            
+            data = response.json()
+            return data.get('data', {})
+            
+        except Exception as e:
+            current_app.logger.error(f"Error parsing address: {str(e)}")
+            return {}
+
+
+    @classmethod
     def get_zones(cls, city_id, force_refresh=False):
         """Get zones for a city with caching"""
         try:
@@ -265,3 +292,57 @@ class PathaoService:
             result['zone_name'] = zone.zone_name if zone else None
         
         return result
+
+    @classmethod
+    def get_stores(cls):
+        """Get list of stores"""
+        try:
+            access_token = cls.get_access_token()
+            if not access_token:
+                return []
+            
+            url = f"{cls.BASE_URL}/aladdin/api/v1/stores"
+            headers = {
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            }
+            
+            response = requests.get(url, headers=headers, timeout=30)
+            response.raise_for_status()
+            
+            data = response.json()
+            return data.get('data', {}).get('data', [])
+            
+        except Exception as e:
+            current_app.logger.error(f"Error fetching stores: {str(e)}")
+            return []
+
+    @classmethod
+    def create_order(cls, order):
+        token = cls.get_access_token()
+        customer = order.customer
+        order_data = {
+            "store_id": 148615,  # Replace with actual store_id
+            "merchant_order_id": str(order.id),
+            "recipient_name": customer.name,
+            "recipient_phone": customer.phone,
+            "recipient_address": customer.address,
+            "recipient_city": order.city_id,
+            "recipient_zone": order.zone_id,
+            "delivery_type": 48,
+            "item_type": 2,  # 2 for parcel
+            "item_quantity": order.item_count,
+            "item_weight": float(0.5),
+            "item_description": "Mixed order",
+            "amount_to_collect": int(order.total_amount),
+        }
+        print(f"Order data: {order_data}")
+        res = requests.post(
+            f"{cls.BASE_URL}/aladdin/api/v1/orders",
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json"
+            },
+            json=order_data
+        )
+        return res.json()

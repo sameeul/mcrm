@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required, current_user
 from sqlalchemy import func, desc
 from datetime import datetime, timedelta
-from models import db, User, Product, ProductType, SizeGroup, SizeGroupMapping, Order, OrderItem, Customer
+from models import db, User, Product, ProductType, SizeGroup, SizeGroupMapping, Order, OrderItem, Customer, PathaoDelivery
 from forms import ProductForm, ProductTypeForm, SizeGroupForm, OrderItemForm, UpdateOrderStatusForm, ReportFilterForm, CreateOrderForm
 from pathao_service import PathaoService
 from auth import admin_required
@@ -728,8 +728,40 @@ def request_shipping(order_id):
     if order.shipping_requested:
         flash('Shipping already requested for this order.', 'info')
     else:
-        order.shipping_requested = True
-        order.updated_at = datetime.utcnow()
-        db.session.commit()
-        flash('Shipping has been requested for this order.', 'success')
+        # Trigger create order request to Pathao
+        from pathao_service import PathaoService
+        try:
+            response = PathaoService.create_order(order)
+            print(f"Response from Pathao: {response}")
+            if response.get('code') == 200:
+                # Extract delivery data from response
+                delivery_data = response.get('data', {})                
+                # Create PathaoDelivery record
+                try:
+                    from models import PathaoDelivery
+                    pathao_delivery = PathaoDelivery(
+                        consignment_id=delivery_data.get('consignment_id'),
+                        merchant_order_id=order.id,
+                        order_status=delivery_data.get('order_status', 'Pending'),
+                        delivery_fee=delivery_data.get('delivery_fee', 0)
+                    )
+                    
+                    db.session.add(pathao_delivery)
+                    order.shipping_requested = True
+                    order.updated_at = datetime.utcnow()
+                    db.session.commit()
+                    
+                    flash(f'Shipping request sent to Pathao successfully. Tracking ID: {pathao_delivery.consignment_id}', 'success')
+                except Exception as db_error:
+                    db.session.rollback()
+                    # Still mark as requested since Pathao accepted the order
+                    order.shipping_requested = True
+                    order.updated_at = datetime.utcnow()
+                    db.session.commit()
+                    flash(f'Shipping request sent to Pathao successfully, but failed to save tracking info: {str(db_error)}', 'warning')
+                    
+            else:
+                flash('Failed to send order to Pathao: ' + response.get('message', 'Unknown error'), 'error')
+        except Exception as e:
+            flash(f'Pathao API error: {str(e)}', 'error')
     return redirect(url_for('main.order_details', order_id=order.id))
