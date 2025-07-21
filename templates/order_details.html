@@ -132,16 +132,30 @@
         <div class="mt-3">
             <form id="shippingRequestForm" method="POST" action="{{ url_for('main.request_shipping', order_id=order.id) }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn-outline-primary"
-                        id="requestShippingBtn"
-                        {% if order.shipping_requested %}disabled{% endif %}>
-                    <i class="bi bi-truck"></i>
-                    {% if order.shipping_requested %}
-                        Shipping Requested
-                    {% else %}
-                        Request Shipping
+                <div class="d-flex align-items-center gap-3">
+                    {% if not order.shipping_requested %}
+                    <div class="flex-grow-1">
+                        <select name="store_id" id="storeSelect" class="form-select" required>
+                            <option value="">Select Store...</option>
+                        </select>
+                        <div class="form-text">
+                            <span id="store-loading" class="d-none">
+                                <i class="bi bi-arrow-clockwise spin"></i> Loading stores...
+                            </span>
+                        </div>
+                    </div>
                     {% endif %}
-                </button>
+                    <button type="submit" class="btn btn-outline-primary"
+                            id="requestShippingBtn"
+                            {% if order.shipping_requested %}disabled{% endif %}>
+                        <i class="bi bi-truck"></i>
+                        {% if order.shipping_requested %}
+                            Shipping Requested
+                        {% else %}
+                            Request Shipping
+                        {% endif %}
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -300,6 +314,13 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const generatePdfBtn = document.getElementById('generatePdfBtn');
+    const storeSelect = document.getElementById('storeSelect');
+    const storeLoading = document.getElementById('store-loading');
+    
+    // Load stores if store dropdown exists (shipping not requested yet)
+    if (storeSelect) {
+        loadStores();
+    }
     
     generatePdfBtn.addEventListener('click', function() {
         // Order data from template
@@ -332,6 +353,35 @@ document.addEventListener('DOMContentLoaded', function() {
         // Generate PDF using external function
         generateInvoicePDF(orderData);
     });
+    
+    // Load stores function
+    function loadStores() {
+        if (storeLoading) {
+            storeLoading.classList.remove('d-none');
+        }
+        
+        fetch('/api/stores')
+            .then(response => response.json())
+            .then(data => {
+                storeSelect.innerHTML = '<option value="">Select Store...</option>';
+                data.forEach(store => {
+                    const option = document.createElement('option');
+                    option.value = store.id;
+                    option.textContent = store.name;
+                    option.title = store.address; // Show address on hover
+                    storeSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading stores:', error);
+                storeSelect.innerHTML = '<option value="">Error loading stores</option>';
+            })
+            .finally(() => {
+                if (storeLoading) {
+                    storeLoading.classList.add('d-none');
+                }
+            });
+    }
 });
 </script>
 {% endblock %}

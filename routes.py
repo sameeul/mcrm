@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required, current_user
 from sqlalchemy import func, desc
 from datetime import datetime, timedelta
-from models import db, User, Product, ProductType, SizeGroup, SizeGroupMapping, Order, OrderItem, Customer, PathaoDelivery
+from models import db, User, Product, ProductType, SizeGroup, SizeGroupMapping, Order, OrderItem, Customer, PathaoDelivery, Store
 from forms import ProductForm, ProductTypeForm, SizeGroupForm, OrderItemForm, UpdateOrderStatusForm, ReportFilterForm, CreateOrderForm
 from pathao_service import PathaoService
 from auth import admin_required
@@ -672,6 +672,60 @@ def api_parse_address():
         current_app.logger.error(f"Error parsing address: {str(e)}")
         return jsonify({'error': 'Failed to parse address'}), 500
 
+
+@main.route('/api/stores')
+@login_required
+def api_stores():
+    """API endpoint to get list of stores from Pathao with 24-hour caching"""
+    try:
+        # Attempt to fetch from PathaoService (which handles caching)
+        stores = PathaoService.get_stores()
+
+        if stores:
+            # Format for frontend
+            store_data = [
+                {
+                    'id': store.id,
+                    'name': store.store_name,
+                    'address': store.store_address
+                }
+                for store in stores
+                if store.id is not None  # Ensure valid ID
+            ]
+            return jsonify(store_data)
+        
+        # Fallback to active local stores (shouldn't happen unless DB is empty or failed)
+        current_app.logger.warning("No Pathao stores available, falling back to local store data")
+        fallback_stores = Store.query.filter_by(is_active=True).order_by(Store.store_name).all()
+        fallback_data = [
+            {
+                'id': f"local_{store.id}",
+                'name': f"{store.store_name} (Local)",
+                'address': store.store_address
+            }
+            for store in fallback_stores
+        ]
+        return jsonify(fallback_data)
+
+    except Exception as e:
+        current_app.logger.error(f"Error in /api/stores: {str(e)}")
+        # Final fallback
+        try:
+            stores = Store.query.filter_by(is_active=True).order_by(Store.store_name).all()
+            store_data = [
+                {
+                    'id': f"local_{store.id}",
+                    'name': f"{store.store_name} (Local)",
+                    'address': store.store_address
+                }
+                for store in stores
+            ]
+            return jsonify(store_data)
+        except Exception as fallback_error:
+            current_app.logger.error(f"Fallback store fetch failed: {str(fallback_error)}")
+            return jsonify({'error': 'Failed to fetch stores'}), 500
+
+
 # User Management API Routes
 @main.route('/api/users/<int:user_id>/toggle-status', methods=['POST'])
 @login_required
@@ -747,13 +801,17 @@ def request_shipping(order_id):
     if not current_user.is_admin() and order.user_id != current_user.id:
         flash('Access denied', 'error')
         return redirect(url_for('main.orders'))
+    
     if order.shipping_requested:
         flash('Shipping already requested for this order.', 'info')
     else:
+        # Get store_id from form data
+        pathao_store_id = request.form.get('store_id')
+        store_name = Store.query.get(pathao_store_id).store_name
         # Trigger create order request to Pathao
         from pathao_service import PathaoService
         try:
-            response = PathaoService.create_order(order)
+            response = PathaoService.create_order(order, store_id=pathao_store_id)
             if response.get('code') == 200:
                 # Extract delivery data from response
                 delivery_data = response.get('data', {})                
@@ -772,14 +830,14 @@ def request_shipping(order_id):
                     order.updated_at = datetime.utcnow()
                     db.session.commit()
                     
-                    flash(f'Shipping request sent to Pathao successfully. Tracking ID: {pathao_delivery.consignment_id}', 'success')
+                    flash(f'Shipping request sent to Pathao successfully from {store_name}. Tracking ID: {pathao_delivery.consignment_id}', 'success')
                 except Exception as db_error:
                     db.session.rollback()
                     # Still mark as requested since Pathao accepted the order
                     order.shipping_requested = True
                     order.updated_at = datetime.utcnow()
                     db.session.commit()
-                    flash(f'Shipping request sent to Pathao successfully, but failed to save tracking info: {str(db_error)}', 'warning')
+                    flash(f'Shipping request sent to Pathao successfully from {store_name}, but failed to save tracking info: {str(db_error)}', 'warning')
                     
             else:
                 flash('Failed to send order to Pathao: ' + response.get('message', 'Unknown error'), 'error')

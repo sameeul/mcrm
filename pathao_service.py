@@ -1,7 +1,7 @@
 import requests
 import json
 from datetime import datetime, timedelta
-from models import db, PathaoCity, PathaoZone, PathaoToken
+from models import db, PathaoCity, PathaoZone, PathaoToken, Store
 from flask import current_app
 
 class PathaoService:
@@ -302,56 +302,114 @@ class PathaoService:
         
         return result
 
+
+
     @classmethod
-    def get_stores(cls):
-        """Get list of stores"""
+    def get_stores(cls, force_refresh=False):
+        """Get list of stores with caching"""
         try:
+            # Check cache first
+            if not force_refresh:
+                cache_cutoff = datetime.utcnow() - timedelta(hours=cls.CACHE_DURATION_HOURS)
+                cached_stores = Store.query.filter(Store.updated_at > cache_cutoff).all()
+                if cached_stores:
+                    return cached_stores
+
+            # Fetch from API
             access_token = cls.get_access_token()
             if not access_token:
                 return []
-            
+
             config = cls.get_config()
             url = f"{config['BASE_URL']}/aladdin/api/v1/stores"
             headers = {
                 "Authorization": f"Bearer {access_token}",
                 "Content-Type": "application/json"
             }
-            
+
             response = requests.get(url, headers=headers, timeout=30)
             response.raise_for_status()
-            
+
             data = response.json()
-            return data.get('data', {}).get('data', [])
-            
+            stores_data = data.get('data', {}).get('data', [])
+
+            # Update cache
+            cls._update_stores_cache(stores_data)
+
+            # Return updated cache
+            return Store.query.all()
+
         except Exception as e:
             current_app.logger.error(f"Error fetching stores: {str(e)}")
-            return []
+            # Return stale cache if error occurs
+            return Store.query.all()
 
     @classmethod
-    def create_order(cls, order):
-        token = cls.get_access_token()
-        customer = order.customer
-        order_data = {
-            "store_id": 148615,  # Replace with actual store_id
-            "merchant_order_id": str(order.id),
-            "recipient_name": customer.name,
-            "recipient_phone": customer.phone,
-            "recipient_address": customer.address,
-            "recipient_city": order.city_id,
-            "recipient_zone": order.zone_id,
-            "delivery_type": 48,
-            "item_type": 2,  # 2 for parcel
-            "item_quantity": order.item_count,
-            "item_weight": float(0.5),
-            "item_description": "Mixed order",
-            "amount_to_collect": int(order.total_amount),
-        }
-        res = requests.post(
-            f"{cls.BASE_URL}/aladdin/api/v1/orders",
-            headers={
+    def _update_stores_cache(cls, stores_data):
+        """Update stores cache in database"""
+        try:
+            for store_data in stores_data:
+                store = Store.query.filter_by(id=store_data['store_id']).first()
+                if store:
+                    store.store_name = store_data.get('store_name', store.store_name)
+                    store.store_address = store_data.get('store_address', store.store_address)
+                    store.updated_at = datetime.utcnow()
+                else:
+                    new_store = Store(
+                        id=store_data['store_id'],
+                        store_name=store_data.get('store_name', ''),
+                        store_address=store_data.get('store_address', ''),
+                        updated_at=datetime.utcnow()
+                    )
+                    db.session.add(new_store)
+            db.session.commit()
+
+        except Exception as e:
+            current_app.logger.error(f"Error updating stores cache: {str(e)}")
+            db.session.rollback()
+
+
+    @classmethod
+    def create_order(cls, order, store_id=None):
+        """Create order in Pathao system with specified store"""
+        try:
+            token = cls.get_access_token()
+            if not token:
+                return {'code': 400, 'message': 'Failed to get access token'}
+            
+            customer = order.customer
+            
+            # Use provided store_id or fallback to default
+            if store_id is None:
+                current_app.logger.error(f"Error creating Pathao order: No store found")
+                return {'code': 500, 'message': f'Failed to create order: No store found'}
+            
+            config = cls.get_config()
+            order_data = {
+                "store_id": int(store_id),
+                "merchant_order_id": str(order.id),
+                "recipient_name": customer.name,
+                "recipient_phone": customer.phone,
+                "recipient_address": customer.address,
+                "recipient_city": order.city_id,
+                "recipient_zone": order.zone_id,
+                "delivery_type": 48,
+                "item_type": 2,  # 2 for parcel
+                "item_quantity": order.item_count,
+                "item_weight": float(0.5),
+                "item_description": "Mixed order",
+                "amount_to_collect": int(order.total_amount),
+            }
+            url = f"{config['BASE_URL']}/aladdin/api/v1/orders"
+            headers = {
                 "Authorization": f"Bearer {token}",
                 "Content-Type": "application/json"
-            },
-            json=order_data
-        )
-        return res.json()
+            }
+            
+            response = requests.post(url, headers=headers, json=order_data, timeout=30)
+            response.raise_for_status()
+            return response.json()
+            
+        except Exception as e:
+            current_app.logger.error(f"Error creating Pathao order: {str(e)}")
+            return {'code': 500, 'message': f'Failed to create order: {str(e)}'}
