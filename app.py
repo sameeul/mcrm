@@ -99,61 +99,6 @@ def create_app(config_name=None):
     
     return app
 
-def init_database():
-    """Initialize database with default admin user and sample data"""
-    # Check if admin user exists
-    admin = User.query.filter_by(username='admin').first()
-    if not admin:
-        admin = User(
-            username='admin',
-            email='admin@example.com',
-            role='admin'
-        )
-        admin.set_password('admin123')  # Change this in production!
-        db.session.add(admin)
-        
-        # Add sample product types
-        from models import ProductType, Product
-        
-        # Create product types
-        clothing_type = ProductType(name='Clothing', description='Apparel and clothing items')
-        electronics_type = ProductType(name='Electronics', description='Electronic devices and accessories')
-        
-        db.session.add(clothing_type)
-        db.session.add(electronics_type)
-        db.session.flush()  # Get IDs
-        
-        # Add sample products with product codes (prices in Bengali Taka)
-        sample_products = [
-            # Clothing items
-            Product(name='Classic Cotton Tee', product_type_id=clothing_type.id, product_code='CT01', size='S', price=1600, quantity=30),
-            Product(name='Classic Cotton Tee', product_type_id=clothing_type.id, product_code='CT02', size='M', price=1600, quantity=42),
-            Product(name='Classic Cotton Tee', product_type_id=clothing_type.id, product_code='CT03', size='L', price=1600, quantity=14),
-            Product(name='Classic Cotton Tee', product_type_id=clothing_type.id, product_code='CT04', size='XL', price=1600, quantity=36),
-            Product(name='Slim Jeans', product_type_id=clothing_type.id, product_code='SJ01', size='32', price=5000, quantity=8),
-            Product(name='Slim Jeans', product_type_id=clothing_type.id, product_code='SJ02', size='34', price=5000, quantity=12),
-            Product(name='Summer Dress', product_type_id=clothing_type.id, product_code='SD01', size='S', price=4000, quantity=15),
-            Product(name='Summer Dress', product_type_id=clothing_type.id, product_code='SD02', size='M', price=4000, quantity=22),
-            
-            # Electronics items
-            Product(name='Wireless Mouse', product_type_id=electronics_type.id, product_code='WM01', size='Standard', price=3000, quantity=50),
-            Product(name='Mechanical Keyboard', product_type_id=electronics_type.id, product_code='MK01', size='Full', price=8000, quantity=25),
-            Product(name='USB Cable', product_type_id=electronics_type.id, product_code='UC01', size='1m', price=1000, quantity=100),
-            Product(name='USB Cable', product_type_id=electronics_type.id, product_code='UC02', size='2m', price=1300, quantity=75),
-        ]
-        
-        for product in sample_products:
-            db.session.add(product)
-        
-        try:
-            db.session.commit()
-            print("Database initialized with admin user and sample products")
-            print("Default admin credentials: username='admin', password='admin123'")
-            print("IMPORTANT: Change the admin password after first login!")
-        except Exception as e:
-            db.session.rollback()
-            print(f"Error initializing database: {e}")
-
 if __name__ == '__main__':
     app = create_app()
     
@@ -163,10 +108,6 @@ if __name__ == '__main__':
     
     print("=" * 50)
     print("🔐 Secure Order Management System")
-    print("=" * 50)
-    print(f"Server starting on http://localhost:{port}")
-    print("Default admin login: admin / admin123")
-    print("REMEMBER: Change admin password after first login!")
     print("=" * 50)
     
     app.run(host='0.0.0.0', port=port)

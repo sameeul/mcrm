@@ -3,18 +3,22 @@ import json
 from datetime import datetime, timedelta
 from models import db, PathaoCity, PathaoZone, PathaoToken
 from flask import current_app
-import csv
 
 class PathaoService:
-    BASE_URL = "https://courier-api-sandbox.pathao.com"
-    CLIENT_ID = "7N1aMJQbWm"
-    CLIENT_SECRET = "wRcaibZkUdSNz2EI9ZyuXLlNrnAv0TdPUPXMnD39"
-    USERNAME = "test@pathao.com"
-    PASSWORD = "lovePathao"
-    GRANT_TYPE = "password"
-    
     CACHE_DURATION_HOURS = 24  # Cache location data for 24 hours
     
+    @staticmethod
+    def get_config():
+        cfg = current_app.config
+        return {
+            "BASE_URL": cfg["PATHAO_BASE_URL"],
+            "CLIENT_ID": cfg["PATHAO_CLIENT_ID"],
+            "CLIENT_SECRET": cfg["PATHAO_CLIENT_SECRET"],
+            "USERNAME": cfg["PATHAO_USERNAME"],
+            "PASSWORD": cfg["PATHAO_PASSWORD"],
+            "GRANT_TYPE": cfg["PATHAO_GRANT_TYPE"],
+        }
+
     @classmethod
     def get_access_token(cls):
         """Get valid access token, refresh if needed"""
@@ -43,13 +47,14 @@ class PathaoService:
     def _issue_new_token(cls):
         """Issue a new access token"""
         try:
-            url = f"{cls.BASE_URL}/aladdin/api/v1/issue-token"
+            config = cls.get_config()
+            url = f"{config['BASE_URL']}/aladdin/api/v1/issue-token"
             payload = {
-                "client_id": cls.CLIENT_ID,
-                "client_secret": cls.CLIENT_SECRET,
-                "grant_type": cls.GRANT_TYPE,
-                "username": cls.USERNAME,
-                "password": cls.PASSWORD
+                "client_id": config["CLIENT_ID"],
+                "client_secret": config["CLIENT_SECRET"],
+                "grant_type": config["GRANT_TYPE"],
+                "username": config["USERNAME"],
+                "password": config["PASSWORD"]
             }
             
             response = requests.post(url, json=payload, timeout=30)
@@ -86,10 +91,11 @@ class PathaoService:
     def _refresh_token(cls, refresh_token):
         """Refresh access token using refresh token"""
         try:
-            url = f"{cls.BASE_URL}/aladdin/api/v1/issue-token"
+            config = cls.get_config()
+            url = f"{config['BASE_URL']}/aladdin/api/v1/issue-token"
             payload = {
-                "client_id": cls.CLIENT_ID,
-                "client_secret": cls.CLIENT_SECRET,
+                "client_id": config["CLIENT_ID"],
+                "client_secret": config["CLIENT_SECRET"],
                 "grant_type": "refresh_token",
                 "refresh_token": refresh_token
             }
@@ -136,7 +142,8 @@ class PathaoService:
             if not access_token:
                 return []
             
-            url = f"{cls.BASE_URL}/aladdin/api/v1/city-list"
+            config = cls.get_config()
+            url = f"{config['BASE_URL']}/aladdin/api/v1/city-list"
             headers = {
                 "Authorization": f"Bearer {access_token}",
                 "Content-Type": "application/json; charset=UTF-8"
@@ -167,7 +174,8 @@ class PathaoService:
             if not access_token:
                 return {}
             
-            url = f"{cls.BASE_URL}/aladdin/api/v1/address-parser"
+            config = cls.get_config()
+            url = f"{config['BASE_URL']}/aladdin/api/v1/address-parser"
             headers = {
                 "Authorization": f"Bearer {access_token}",
                 "Content-Type": "application/json; charset=UTF-8"
@@ -205,7 +213,8 @@ class PathaoService:
             if not access_token:
                 return []
             
-            url = f"{cls.BASE_URL}/aladdin/api/v1/cities/{city_id}/zone-list"
+            config = cls.get_config()
+            url = f"{config['BASE_URL']}/aladdin/api/v1/cities/{city_id}/zone-list"
             headers = {
                 "Authorization": f"Bearer {access_token}",
                 "Content-Type": "application/json; charset=UTF-8"
@@ -301,7 +310,8 @@ class PathaoService:
             if not access_token:
                 return []
             
-            url = f"{cls.BASE_URL}/aladdin/api/v1/stores"
+            config = cls.get_config()
+            url = f"{config['BASE_URL']}/aladdin/api/v1/stores"
             headers = {
                 "Authorization": f"Bearer {access_token}",
                 "Content-Type": "application/json"
