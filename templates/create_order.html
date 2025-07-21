@@ -58,6 +58,15 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="parseAddressBtn">
+                                <i class="bi bi-geo-alt"></i> Parse Address
+                            </button>
+                            <span id="parseAddressLoading" class="d-none ms-2">
+                                <i class="bi bi-arrow-clockwise spin"></i> Parsing address...
+                            </span>
+                            <div id="parseAddressResult" class="mt-2"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -428,6 +437,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize
     loadCities();
     loadProducts();
+    
+    // Address parsing elements
+    const parseAddressBtn = document.getElementById('parseAddressBtn');
+    const parseAddressLoading = document.getElementById('parseAddressLoading');
+    const parseAddressResult = document.getElementById('parseAddressResult');
+    const customerAddressField = document.getElementById('customer_address');
+    
+    // Address parsing event listener
+    parseAddressBtn.addEventListener('click', parseAddress);
     
     // Location handling
     citySelect.addEventListener('change', function() {
@@ -894,6 +912,125 @@ document.addEventListener('DOMContentLoaded', function() {
             orderTotal.classList.remove('text-danger');
             orderTotal.classList.add('text-success');
         }
+    }
+    
+    // Parse address function
+    function parseAddress() {
+        const address = customerAddressField.value.trim();
+        
+        if (!address) {
+            showParseResult('Please enter an address first.', 'warning');
+            return;
+        }
+        
+        // Get CSRF token from the form
+        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+        
+        // Show loading state
+        parseAddressBtn.disabled = true;
+        parseAddressLoading.classList.remove('d-none');
+        parseAddressResult.innerHTML = '';
+        
+        // Make API call with CSRF token
+        fetch('/api/parse-address', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ address: address })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.data) {
+                handleParseSuccess(data.data);
+            } else {
+                showParseResult(data.error || 'Failed to parse address', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error parsing address:', error);
+            showParseResult('Error parsing address. Please try again.', 'danger');
+        })
+        .finally(() => {
+            parseAddressBtn.disabled = false;
+            parseAddressLoading.classList.add('d-none');
+        });
+    }
+    
+    // Handle successful address parsing
+    function handleParseSuccess(parsedData) {
+        const districtId = parsedData.district_id;
+        const zoneId = parsedData.zone_id;
+        const districtName = parsedData.district_name;
+        const zoneName = parsedData.zone_name;
+        const hubName = parsedData.hub_name;
+        const score = parsedData.score;
+        
+        // Show success message with parsed information
+        let resultMessage = `
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle"></i> <strong>Address parsed successfully!</strong><br>
+                <small>
+                    District: ${districtName || 'N/A'} | Zone: ${zoneName || 'N/A'}
+                </small>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        parseAddressResult.innerHTML = resultMessage;
+        
+        // Auto-populate city dropdown if district_id is available
+        if (districtId) {
+            // Find the city option with matching ID
+            const cityOption = Array.from(citySelect.options).find(option => 
+                parseInt(option.value) === districtId
+            );
+            
+            if (cityOption) {
+                citySelect.value = districtId;
+                citySelect.classList.remove('is-invalid');
+                
+                // Trigger change event to load zones
+                const changeEvent = new Event('change');
+                citySelect.dispatchEvent(changeEvent);
+                
+                // Wait a bit for zones to load, then set zone
+                if (zoneId) {
+                    setTimeout(() => {
+                        setZoneValue(zoneId);
+                    }, 1000);
+                }
+            } else {
+                showParseResult(`District "${districtName}" not found in available cities.`, 'warning');
+            }
+        }
+    }
+    
+    // Set zone value after zones are loaded
+    function setZoneValue(zoneId) {
+        const zoneOption = Array.from(zoneSelect.options).find(option => 
+            parseInt(option.value) === zoneId
+        );
+        
+        if (zoneOption) {
+            zoneSelect.value = zoneId;
+            zoneSelect.classList.remove('is-invalid');
+        }
+    }
+    
+    // Show parse result message
+    function showParseResult(message, type) {
+        const alertClass = type === 'success' ? 'alert-success' : 
+                          type === 'warning' ? 'alert-warning' : 'alert-danger';
+        const icon = type === 'success' ? 'bi-check-circle' : 
+                    type === 'warning' ? 'bi-exclamation-triangle' : 'bi-x-circle';
+        
+        parseAddressResult.innerHTML = `
+            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                <i class="bi ${icon}"></i> ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
     }
 });
 </script>

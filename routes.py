@@ -650,6 +650,29 @@ def api_products():
     except Exception as e:
         return jsonify({'error': 'Failed to fetch products'}), 500
 
+@main.route('/api/parse-address', methods=['POST'])
+@login_required
+def api_parse_address():
+    """API endpoint to parse address using Pathao service"""
+    try:
+        data = request.get_json()
+        print(data)
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        address = data.get('address', '').strip()
+        if not address:
+            return jsonify({'error': 'Address is required'}), 400
+        
+        parsed_data = PathaoService.parse_address(address)
+        if not parsed_data:
+            return jsonify({'error': 'Failed to parse address or no results found'}), 404
+        
+        return jsonify({'success': True, 'data': parsed_data})
+    except Exception as e:
+        current_app.logger.error(f"Error parsing address: {str(e)}")
+        return jsonify({'error': 'Failed to parse address'}), 500
+
 # User Management API Routes
 @main.route('/api/users/<int:user_id>/toggle-status', methods=['POST'])
 @login_required
@@ -732,7 +755,6 @@ def request_shipping(order_id):
         from pathao_service import PathaoService
         try:
             response = PathaoService.create_order(order)
-            print(f"Response from Pathao: {response}")
             if response.get('code') == 200:
                 # Extract delivery data from response
                 delivery_data = response.get('data', {})                

@@ -336,7 +336,6 @@ class PathaoService:
             "item_description": "Mixed order",
             "amount_to_collect": int(order.total_amount),
         }
-        print(f"Order data: {order_data}")
         res = requests.post(
             f"{cls.BASE_URL}/aladdin/api/v1/orders",
             headers={
