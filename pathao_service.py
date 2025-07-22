@@ -1,7 +1,7 @@
 import requests
 import json
 from datetime import datetime, timedelta
-from models import db, PathaoCity, PathaoZone, PathaoToken, Store
+from models import db, PathaoCity, PathaoZone, PathaoToken, PathaoStore
 from flask import current_app
 
 class PathaoService:
@@ -311,7 +311,7 @@ class PathaoService:
             # Check cache first
             if not force_refresh:
                 cache_cutoff = datetime.utcnow() - timedelta(hours=cls.CACHE_DURATION_HOURS)
-                cached_stores = Store.query.filter(Store.updated_at > cache_cutoff).all()
+                cached_stores = PathaoStore.query.filter(PathaoStore.updated_at > cache_cutoff).all()
                 if cached_stores:
                     return cached_stores
 
@@ -337,25 +337,25 @@ class PathaoService:
             cls._update_stores_cache(stores_data)
 
             # Return updated cache
-            return Store.query.all()
+            return PathaoStore.query.all()
 
         except Exception as e:
             current_app.logger.error(f"Error fetching stores: {str(e)}")
             # Return stale cache if error occurs
-            return Store.query.all()
+            return PathaoStore.query.all()
 
     @classmethod
     def _update_stores_cache(cls, stores_data):
         """Update stores cache in database"""
         try:
             for store_data in stores_data:
-                store = Store.query.filter_by(id=store_data['store_id']).first()
+                store = PathaoStore.query.filter_by(id=store_data['store_id']).first()
                 if store:
                     store.store_name = store_data.get('store_name', store.store_name)
                     store.store_address = store_data.get('store_address', store.store_address)
                     store.updated_at = datetime.utcnow()
                 else:
-                    new_store = Store(
+                    new_store = PathaoStore(
                         id=store_data['store_id'],
                         store_name=store_data.get('store_name', ''),
                         store_address=store_data.get('store_address', ''),

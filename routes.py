@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required, current_user
 from sqlalchemy import func, desc
 from datetime import datetime, timedelta
-from models import db, User, Product, ProductType, SizeGroup, SizeGroupMapping, Order, OrderItem, Customer, PathaoDelivery, Store
+from models import db, User, Product, ProductType, SizeGroup, SizeGroupMapping, Order, OrderItem, Customer, PathaoDelivery, PathaoStore
 from forms import ProductForm, ProductTypeForm, SizeGroupForm, OrderItemForm, UpdateOrderStatusForm, ReportFilterForm, CreateOrderForm
 from pathao_service import PathaoService
 from auth import admin_required
@@ -696,7 +696,7 @@ def api_stores():
         
         # Fallback to active local stores (shouldn't happen unless DB is empty or failed)
         current_app.logger.warning("No Pathao stores available, falling back to local store data")
-        fallback_stores = Store.query.filter_by(is_active=True).order_by(Store.store_name).all()
+        fallback_stores = PathaoStore.query.filter_by(is_active=True).order_by(PathaoStore.store_name).all()
         fallback_data = [
             {
                 'id': f"local_{store.id}",
@@ -711,7 +711,7 @@ def api_stores():
         current_app.logger.error(f"Error in /api/stores: {str(e)}")
         # Final fallback
         try:
-            stores = Store.query.filter_by(is_active=True).order_by(Store.store_name).all()
+            stores = PathaoStore.query.filter_by(is_active=True).order_by(PathaoStore.store_name).all()
             store_data = [
                 {
                     'id': f"local_{store.id}",
@@ -807,7 +807,7 @@ def request_shipping(order_id):
     else:
         # Get store_id from form data
         pathao_store_id = request.form.get('store_id')
-        store_name = Store.query.get(pathao_store_id).store_name
+        store_name = PathaoStore.query.get(pathao_store_id).store_name
         # Trigger create order request to Pathao
         from pathao_service import PathaoService
         try:

@@ -386,7 +386,7 @@ class LoginAttempt(db.Model):
     def __repr__(self):
         return f'<LoginAttempt {self.ip_address} - {self.success}>'
 
-class Store(db.Model):
+class PathaoStore(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     store_name = db.Column(db.String(100), nullable=False)
     store_address = db.Column(db.Text, nullable=False)
