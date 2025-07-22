@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from app import create_app
 from models import (
     db, User, Customer, Product, ProductType, SizeGroup, SizeGroupMapping, 
-    Order, OrderItem, PathaoCity, PathaoZone, PathaoToken
+    Order, OrderItem, PathaoCity, PathaoZone, PathaoToken, PathaoStore
 )
 
 def init_database():
