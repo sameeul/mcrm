@@ -18,7 +18,7 @@ class Config:
     SESSION_COOKIE_SAMESITE = 'Lax'
     
     # Rate Limiting
-    RATELIMIT_STORAGE_URL = "memory://"
+    RATELIMIT_STORAGE_URL = os.environ.get("REDIS_URL")  or "memory://"
     RATELIMIT_DEFAULT = "100 per hour"
     
     # Application Settings
