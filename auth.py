@@ -42,7 +42,7 @@ def login():
         if user and user.check_password(form.password.data) and user.is_active:
             # Successful login
             login_user(user, remember=False)
-            user.last_login = datetime.utcnow()
+            user.last_login = datetime.now(UTC)
             db.session.commit()
             
             log_login_attempt(form.username.data, True, ip_address)

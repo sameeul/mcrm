@@ -36,6 +36,7 @@ def create_app(config_name=None):
         return User.query.get(int(user_id))
     
     # Setup rate limiting
+    print(app.config['RATELIMIT_STORAGE_URI'])
     limiter = Limiter(
         key_func=get_remote_address,
         default_limits=["200 per day", "50 per hour"]

@@ -48,7 +48,7 @@ def create_users():
         role='admin'
     )
     admin.set_password('admin123')
-    admin.last_login = datetime.utcnow()
+    admin.last_login = datetime.now(UTC)
     db.session.add(admin)
     
     db.session.commit()

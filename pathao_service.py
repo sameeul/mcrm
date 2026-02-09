@@ -64,7 +64,7 @@ class PathaoService:
             
             # Calculate expiry time (subtract 1 hour for safety)
             expires_in = data.get('expires_in', 432000)  # Default 5 days
-            expires_at = datetime.utcnow() + timedelta(seconds=expires_in - 3600)
+            expires_at = datetime.now(UTC) + timedelta(seconds=expires_in - 3600)
             
             # Save token to database
             token_record = PathaoToken.query.first()
@@ -107,7 +107,7 @@ class PathaoService:
             
             # Calculate expiry time
             expires_in = data.get('expires_in', 432000)
-            expires_at = datetime.utcnow() + timedelta(seconds=expires_in - 3600)
+            expires_at = datetime.now(UTC) + timedelta(seconds=expires_in - 3600)
             
             # Update token in database
             token_record = PathaoToken.query.first()
@@ -129,7 +129,7 @@ class PathaoService:
         try:
             # Check cache first
             if not force_refresh:
-                cache_cutoff = datetime.utcnow() - timedelta(hours=cls.CACHE_DURATION_HOURS)
+                cache_cutoff = datetime.now(UTC) - timedelta(hours=cls.CACHE_DURATION_HOURS)
                 cached_cities = PathaoCity.query.filter(
                     PathaoCity.last_updated > cache_cutoff
                 ).all()
@@ -199,7 +199,7 @@ class PathaoService:
         try:
             # Check cache first
             if not force_refresh:
-                cache_cutoff = datetime.utcnow() - timedelta(hours=cls.CACHE_DURATION_HOURS)
+                cache_cutoff = datetime.now(UTC) - timedelta(hours=cls.CACHE_DURATION_HOURS)
                 cached_zones = PathaoZone.query.filter(
                     PathaoZone.city_id == city_id,
                     PathaoZone.last_updated > cache_cutoff
@@ -246,12 +246,12 @@ class PathaoService:
                 city = PathaoCity.query.filter_by(city_id=city_data['city_id']).first()
                 if city:
                     city.city_name = city_data['city_name']
-                    city.last_updated = datetime.utcnow()
+                    city.last_updated = datetime.now(UTC)
                 else:
                     city = PathaoCity(
                         city_id=city_data['city_id'],
                         city_name=city_data['city_name'],
-                        last_updated=datetime.utcnow()
+                        last_updated=datetime.now(UTC)
                     )
                     db.session.add(city)
             
@@ -270,13 +270,13 @@ class PathaoService:
                 if zone:
                     zone.zone_name = zone_data['zone_name']
                     zone.city_id = city_id
-                    zone.last_updated = datetime.utcnow()
+                    zone.last_updated = datetime.now(UTC)
                 else:
                     zone = PathaoZone(
                         zone_id=zone_data['zone_id'],
                         zone_name=zone_data['zone_name'],
                         city_id=city_id,
-                        last_updated=datetime.utcnow()
+                        last_updated=datetime.now(UTC)
                     )
                     db.session.add(zone)
             
@@ -310,7 +310,7 @@ class PathaoService:
         try:
             # Check cache first
             if not force_refresh:
-                cache_cutoff = datetime.utcnow() - timedelta(hours=cls.CACHE_DURATION_HOURS)
+                cache_cutoff = datetime.now(UTC) - timedelta(hours=cls.CACHE_DURATION_HOURS)
                 cached_stores = PathaoStore.query.filter(PathaoStore.updated_at > cache_cutoff).all()
                 if cached_stores:
                     return cached_stores
@@ -353,13 +353,13 @@ class PathaoService:
                 if store:
                     store.store_name = store_data.get('store_name', store.store_name)
                     store.store_address = store_data.get('store_address', store.store_address)
-                    store.updated_at = datetime.utcnow()
+                    store.updated_at = datetime.now(UTC)
                 else:
                     new_store = PathaoStore(
                         id=store_data['store_id'],
                         store_name=store_data.get('store_name', ''),
                         store_address=store_data.get('store_address', ''),
-                        updated_at=datetime.utcnow()
+                        updated_at=datetime.now(UTC)
                     )
                     db.session.add(new_store)
             db.session.commit()
