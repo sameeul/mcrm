@@ -1,6 +1,6 @@
 import requests
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from models import db, PathaoCity, PathaoZone, PathaoToken, PathaoStore
 from flask import current_app
 
