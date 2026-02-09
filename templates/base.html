@@ -48,10 +48,9 @@
                             <i class="bi bi-graph-up"></i> Reports
                         </a>
                     </li>
-                    {% if current_user.is_admin() %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-gear"></i> Admin
+                            <i class="bi bi-gear"></i> Management
                         </a>
                         <ul class="dropdown-menu">
                             <li><h6 class="dropdown-header">Product Management</h6></li>
@@ -64,6 +63,7 @@
                             <li><a class="dropdown-item" href="{{ url_for('main.size_groups') }}">
                                 <i class="bi bi-rulers"></i> Size Groups
                             </a></li>
+                            {% if current_user.is_admin() %}
                             <li><hr class="dropdown-divider"></li>
                             <li><h6 class="dropdown-header">User Management</h6></li>
                             <li><a class="dropdown-item" href="{{ url_for('main.manage_users') }}">
@@ -72,9 +72,9 @@
                             <li><a class="dropdown-item" href="{{ url_for('auth.create_user') }}">
                                 <i class="bi bi-person-plus"></i> Create User
                             </a></li>
+                            {% endif %}
                         </ul>
                     </li>
-                    {% endif %}
                 </ul>
                 
                 <ul class="navbar-nav">
