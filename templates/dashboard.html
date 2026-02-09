@@ -12,119 +12,69 @@
 
 <!-- Statistics Cards -->
 <div class="row mb-4">
-    {% if current_user.is_admin() %}
-        <div class="col-md-3 mb-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4>{{ stats.total_products }}</h4>
-                            <p class="mb-0">Total Products</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="bi bi-box-seam fs-1"></i>
-                        </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.total_products }}</h4>
+                        <p class="mb-0">Total Products</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-box-seam fs-1"></i>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div class="col-md-3 mb-3">
-            <div class="card bg-warning text-dark">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4>{{ stats.low_stock_products }}</h4>
-                            <p class="mb-0">Low Stock Items</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="bi bi-exclamation-triangle fs-1"></i>
-                        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.low_stock_products }}</h4>
+                        <p class="mb-0">Low Stock Items</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-exclamation-triangle fs-1"></i>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div class="col-md-3 mb-3">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4>{{ stats.total_orders }}</h4>
-                            <p class="mb-0">Total Orders</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="bi bi-cart-check fs-1"></i>
-                        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.total_orders }}</h4>
+                        <p class="mb-0">Total Orders</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-cart-check fs-1"></i>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div class="col-md-3 mb-3">
-            <div class="card bg-info text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4>{{ stats.pending_orders }}</h4>
-                            <p class="mb-0">Pending Orders</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="bi bi-clock fs-1"></i>
-                        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.pending_orders }}</h4>
+                        <p class="mb-0">Pending Orders</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-clock fs-1"></i>
                     </div>
                 </div>
             </div>
         </div>
-    {% else %}
-        <div class="col-md-4 mb-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4>{{ stats.my_orders }}</h4>
-                            <p class="mb-0">My Orders</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="bi bi-cart-check fs-1"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4 mb-3">
-            <div class="card bg-warning text-dark">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4>{{ stats.pending_orders }}</h4>
-                            <p class="mb-0">Pending Orders</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="bi bi-clock fs-1"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4 mb-3">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4>{{ stats.completed_orders }}</h4>
-                            <p class="mb-0">Completed Orders</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="bi bi-check-circle fs-1"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    {% endif %}
+    </div>
 </div>
 
 <!-- Quick Actions -->
@@ -151,19 +101,11 @@
                             <i class="bi bi-cart-check"></i> View Orders
                         </a>
                     </div>
-                    {% if current_user.is_admin() %}
                     <div class="col-md-3 mb-2">
                         <a href="{{ url_for('main.add_product') }}" class="btn btn-warning w-100">
                             <i class="bi bi-plus-square"></i> Add Product
                         </a>
                     </div>
-                    {% else %}
-                    <div class="col-md-3 mb-2">
-                        <a href="{{ url_for('main.reports') }}" class="btn btn-secondary w-100">
-                            <i class="bi bi-graph-up"></i> View Reports
-                        </a>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
@@ -184,9 +126,7 @@
                             <thead>
                                 <tr>
                                     <th>Order #</th>
-                                    {% if current_user.is_admin() %}
                                     <th>Customer</th>
-                                    {% endif %}
                                     <th>Total</th>
                                     <th>Status</th>
                                     <th>Date</th>
@@ -197,9 +137,7 @@
                                 {% for order in recent_orders %}
                                 <tr>
                                     <td><strong>#{{ order.id }}</strong></td>
-                                    {% if current_user.is_admin() %}
                                     <td>{{ order.customer.name }}</td>
-                                    {% endif %}
                                     <td>{{ order.total_amount|currency }}</td>
                                     <td>
                                         <span class="badge bg-{{ 'success' if order.status == 'completed' else 'warning' if order.status == 'pending' else 'info' if order.status == 'processing' else 'secondary' }}">
@@ -235,7 +173,6 @@
         </div>
     </div>
     
-    {% if current_user.is_admin() %}
     <div class="col-md-4">
         <div class="card">
             <div class="card-header">
@@ -270,6 +207,5 @@
             </div>
         </div>
     </div>
-    {% endif %}
 </div>
 {% endblock %}

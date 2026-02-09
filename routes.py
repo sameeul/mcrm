@@ -21,28 +21,17 @@ def dashboard():
     # Get dashboard statistics
     stats = {}
     
-    if current_user.is_admin():
-        # Admin sees all statistics
-        stats['total_products'] = Product.query.count()
-        stats['low_stock_products'] = Product.query.filter(Product.quantity < 10).count()
-        stats['total_orders'] = Order.query.count()
-        stats['pending_orders'] = Order.query.filter_by(status='pending').count()
-        stats['total_users'] = User.query.filter_by(is_active=True).count()
-        
-        # Recent orders
-        recent_orders = Order.query.order_by(desc(Order.created_at)).limit(5).all()
-        
-        # Low stock products
-        low_stock_products = Product.query.filter(Product.quantity < 10).limit(5).all()
-    else:
-        # Regular users see their own statistics
-        stats['my_orders'] = Order.query.filter_by(user_id=current_user.id).count()
-        stats['pending_orders'] = Order.query.filter_by(user_id=current_user.id, status='pending').count()
-        stats['completed_orders'] = Order.query.filter_by(user_id=current_user.id, status='completed').count()
-        
-        # User's recent orders
-        recent_orders = Order.query.filter_by(user_id=current_user.id).order_by(desc(Order.created_at)).limit(5).all()
-        low_stock_products = []
+    stats['total_products'] = Product.query.count()
+    stats['low_stock_products'] = Product.query.filter(Product.quantity < 10).count()
+    stats['total_orders'] = Order.query.count()
+    stats['pending_orders'] = Order.query.filter_by(status='pending').count()
+    stats['total_users'] = User.query.filter_by(is_active=True).count()
+
+    # Recent orders
+    recent_orders = Order.query.order_by(desc(Order.created_at)).limit(5).all()
+
+    # Low stock products
+    low_stock_products = Product.query.filter(Product.quantity < 10).limit(5).all()
     
     return render_template('dashboard.html', 
                          stats=stats, 
@@ -67,7 +56,6 @@ def inventory():
 
 @main.route('/add_product', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def add_product():
     form = ProductForm()
     if form.validate_on_submit():
@@ -101,7 +89,6 @@ def add_product():
 
 @main.route('/edit_product/<int:product_id>', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def edit_product(product_id):
     product = Product.query.get_or_404(product_id)
     form = ProductForm(obj=product, product_id=product_id)
@@ -135,7 +122,6 @@ def edit_product(product_id):
 
 @main.route('/delete_product/<int:product_id>')
 @login_required
-@admin_required
 def delete_product(product_id):
     product = Product.query.get_or_404(product_id)
     
@@ -160,11 +146,8 @@ def orders():
     page = request.args.get('page', 1, type=int)
     status_filter = request.args.get('status', '', type=str)
     
-    if current_user.is_admin():
-        query = Order.query
-    else:
-        query = Order.query.filter_by(user_id=current_user.id)
-    
+    query = Order.query
+
     if status_filter:
         query = query.filter_by(status=status_filter)
     
@@ -276,11 +259,6 @@ def create_order():
 def order_details(order_id):
     order = Order.query.get_or_404(order_id)
     
-    # Check access permissions
-    if not current_user.is_admin() and order.user_id != current_user.id:
-        flash('Access denied', 'error')
-        return redirect(url_for('main.orders'))
-    
     # Create form for CSRF token generation
     update_status_form = UpdateOrderStatusForm()
     
@@ -288,7 +266,6 @@ def order_details(order_id):
 
 @main.route('/update_order_status', methods=['POST'])
 @login_required
-@admin_required
 def update_order_status():
     form = UpdateOrderStatusForm()
     if form.validate_on_submit():
@@ -332,11 +309,8 @@ def generate_report():
         end_date = end_date.replace(hour=23, minute=59, second=59)  # End of day
         
         # Base query
-        if current_user.is_admin():
-            orders_query = Order.query
-        else:
-            orders_query = Order.query.filter_by(user_id=current_user.id)
-        
+        orders_query = Order.query
+
         # Filter by date range
         orders = orders_query.filter(
             Order.created_at >= start_date,
@@ -387,7 +361,6 @@ def manage_users():
 # Product Type Management Routes
 @main.route('/admin/product-types')
 @login_required
-@admin_required
 def product_types():
     page = request.args.get('page', 1, type=int)
     product_types = ProductType.query.order_by(ProductType.name).paginate(
@@ -397,7 +370,6 @@ def product_types():
 
 @main.route('/admin/product-types/add', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def add_product_type():
     form = ProductTypeForm()
     if form.validate_on_submit():
@@ -418,7 +390,6 @@ def add_product_type():
 
 @main.route('/admin/product-types/edit/<int:product_type_id>', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def edit_product_type(product_type_id):
     product_type = ProductType.query.get_or_404(product_type_id)
     form = ProductTypeForm(obj=product_type, product_type_id=product_type_id)
@@ -439,7 +410,6 @@ def edit_product_type(product_type_id):
 
 @main.route('/admin/product-types/delete/<int:product_type_id>')
 @login_required
-@admin_required
 def delete_product_type(product_type_id):
     product_type = ProductType.query.get_or_404(product_type_id)
     
@@ -461,7 +431,6 @@ def delete_product_type(product_type_id):
 # Size Group Management Routes
 @main.route('/admin/size-groups')
 @login_required
-@admin_required
 def size_groups():
     page = request.args.get('page', 1, type=int)
     product_type_filter = request.args.get('product_type', '', type=str)
@@ -484,7 +453,6 @@ def size_groups():
 
 @main.route('/admin/size-groups/add', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def add_size_group():
     form = SizeGroupForm()
     if form.validate_on_submit():
@@ -531,7 +499,6 @@ def add_size_group():
 
 @main.route('/admin/size-groups/edit/<int:size_group_id>', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def edit_size_group(size_group_id):
     size_group = SizeGroup.query.get_or_404(size_group_id)
     
@@ -566,7 +533,6 @@ def edit_size_group(size_group_id):
 
 @main.route('/admin/size-groups/delete/<int:size_group_id>')
 @login_required
-@admin_required
 def delete_size_group(size_group_id):
     size_group = SizeGroup.query.get_or_404(size_group_id)
     
@@ -797,11 +763,6 @@ def api_delete_user(user_id):
 @login_required
 def request_shipping(order_id):
     order = Order.query.get_or_404(order_id)
-    # Only allow if not already requested and user has access
-    if not current_user.is_admin() and order.user_id != current_user.id:
-        flash('Access denied', 'error')
-        return redirect(url_for('main.orders'))
-    
     if order.shipping_requested:
         flash('Shipping already requested for this order.', 'info')
     else:
