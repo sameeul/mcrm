@@ -117,7 +117,7 @@ def edit_product(product_id):
         product.quantity = form.quantity.data
         product.price = form.price.data
         product.size_group_id = form.size_group_id.data if form.size_group_id.data != 0 else None
-        product.updated_at = datetime.utcnow()
+        product.updated_at = datetime.now(UTC)
         
         # Auto-assign size group if not manually selected
         if not product.size_group_id:
@@ -295,7 +295,7 @@ def update_order_status():
         order = Order.query.get_or_404(form.order_id.data)
         old_status = order.status
         order.status = form.status.data
-        order.updated_at = datetime.utcnow()
+        order.updated_at = datetime.now(UTC)
         
         try:
             db.session.commit()
@@ -827,7 +827,7 @@ def request_shipping(order_id):
                     
                     db.session.add(pathao_delivery)
                     order.shipping_requested = True
-                    order.updated_at = datetime.utcnow()
+                    order.updated_at = datetime.now(UTC)
                     db.session.commit()
                     
                     flash(f'Shipping request sent to Pathao successfully from {store_name}. Tracking ID: {pathao_delivery.consignment_id}', 'success')
@@ -835,7 +835,7 @@ def request_shipping(order_id):
                     db.session.rollback()
                     # Still mark as requested since Pathao accepted the order
                     order.shipping_requested = True
-                    order.updated_at = datetime.utcnow()
+                    order.updated_at = datetime.now(UTC)
                     db.session.commit()
                     flash(f'Shipping request sent to Pathao successfully from {store_name}, but failed to save tracking info: {str(db_error)}', 'warning')
                     

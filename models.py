@@ -80,7 +80,7 @@ class PathaoToken(db.Model):
     @property
     def is_expired(self):
         """Check if token is expired"""
-        return datetime.utcnow() >= self.expires_at
+        return datetime.now(UTC) >= self.expires_at
     
     def __repr__(self):
         return f'<PathaoToken expires_at={self.expires_at}>'
@@ -241,7 +241,7 @@ class Product(db.Model):
                     compatible.quantity -= used
                     remaining -= used
         
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
         return remaining == 0
     
     def auto_assign_size_group(self):
@@ -430,7 +430,7 @@ class PathaoDelivery(db.Model):
         self.order_status = new_status
         if new_delivery_fee is not None:
             self.delivery_fee = new_delivery_fee
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
     
     def __repr__(self):
         return f'<PathaoDelivery {self.consignment_id} - {self.order_status}>'
