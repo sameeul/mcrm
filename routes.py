@@ -48,7 +48,7 @@ def inventory():
     if search:
         query = query.filter(Product.name.contains(search))
     
-    products = query.order_by(Product.name).paginate(
+    products = query.join(Product.product_type).order_by(ProductType.name, Product.name).paginate(
         page=page, per_page=20, error_out=False
     )
     
