@@ -359,16 +359,16 @@ def manage_users():
     return render_template('manage_users.html', users=users)
 
 # Product Type Management Routes
-@main.route('/admin/product-types')
+@main.route('/product-types')
 @login_required
 def product_types():
     page = request.args.get('page', 1, type=int)
     product_types = ProductType.query.order_by(ProductType.name).paginate(
         page=page, per_page=20, error_out=False
     )
-    return render_template('admin/product_types.html', product_types=product_types)
+    return render_template('product_types.html', product_types=product_types)
 
-@main.route('/admin/product-types/add', methods=['GET', 'POST'])
+@main.route('/product-types/add', methods=['GET', 'POST'])
 @login_required
 def add_product_type():
     form = ProductTypeForm()
@@ -386,9 +386,9 @@ def add_product_type():
             db.session.rollback()
             flash('Error adding product type. Please try again.', 'error')
     
-    return render_template('admin/add_product_type.html', form=form)
+    return render_template('add_product_type.html', form=form)
 
-@main.route('/admin/product-types/edit/<int:product_type_id>', methods=['GET', 'POST'])
+@main.route('/product-types/edit/<int:product_type_id>', methods=['GET', 'POST'])
 @login_required
 def edit_product_type(product_type_id):
     product_type = ProductType.query.get_or_404(product_type_id)
@@ -406,9 +406,9 @@ def edit_product_type(product_type_id):
             db.session.rollback()
             flash('Error updating product type. Please try again.', 'error')
     
-    return render_template('admin/edit_product_type.html', form=form, product_type=product_type)
+    return render_template('edit_product_type.html', form=form, product_type=product_type)
 
-@main.route('/admin/product-types/delete/<int:product_type_id>')
+@main.route('/product-types/delete/<int:product_type_id>')
 @login_required
 def delete_product_type(product_type_id):
     product_type = ProductType.query.get_or_404(product_type_id)
@@ -429,7 +429,7 @@ def delete_product_type(product_type_id):
     return redirect(url_for('main.product_types'))
 
 # Size Group Management Routes
-@main.route('/admin/size-groups')
+@main.route('/size-groups')
 @login_required
 def size_groups():
     page = request.args.get('page', 1, type=int)
@@ -446,12 +446,12 @@ def size_groups():
     # Get product types for filter dropdown
     product_types = ProductType.query.order_by(ProductType.name).all()
     
-    return render_template('admin/size_groups.html', 
+    return render_template('size_groups.html', 
                          size_groups=size_groups, 
                          product_types=product_types,
                          product_type_filter=product_type_filter)
 
-@main.route('/admin/size-groups/add', methods=['GET', 'POST'])
+@main.route('/size-groups/add', methods=['GET', 'POST'])
 @login_required
 def add_size_group():
     form = SizeGroupForm()
@@ -495,9 +495,9 @@ def add_size_group():
             db.session.rollback()
             flash('Error adding size group. Please try again.', 'error')
     
-    return render_template('admin/add_size_group.html', form=form)
+    return render_template('add_size_group.html', form=form)
 
-@main.route('/admin/size-groups/edit/<int:size_group_id>', methods=['GET', 'POST'])
+@main.route('/size-groups/edit/<int:size_group_id>', methods=['GET', 'POST'])
 @login_required
 def edit_size_group(size_group_id):
     size_group = SizeGroup.query.get_or_404(size_group_id)
@@ -529,9 +529,9 @@ def edit_size_group(size_group_id):
             db.session.rollback()
             flash('Error updating size group. Please try again.', 'error')
     
-    return render_template('admin/edit_size_group.html', form=form, size_group=size_group)
+    return render_template('edit_size_group.html', form=form, size_group=size_group)
 
-@main.route('/admin/size-groups/delete/<int:size_group_id>')
+@main.route('/size-groups/delete/<int:size_group_id>')
 @login_required
 def delete_size_group(size_group_id):
     size_group = SizeGroup.query.get_or_404(size_group_id)

@@ -12,7 +12,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='user')  # 'admin' or 'user'
     is_active = db.Column(db.Boolean, default=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(UTC))
     last_login = db.Column(db.DateTime)
     
     # Relationships
@@ -38,8 +38,8 @@ class Customer(db.Model):
     name = db.Column(db.String(100), nullable=False)
     phone = db.Column(db.String(20), nullable=False)
     address = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(UTC))
+    updated_at = db.Column(db.DateTime, default=datetime.now(UTC), onupdate=datetime.now(UTC))
     
     # Relationships
     orders = db.relationship('Order', backref='customer', lazy=True)
@@ -51,7 +51,7 @@ class PathaoCity(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     city_id = db.Column(db.Integer, unique=True, nullable=False)  # Pathao city_id
     city_name = db.Column(db.String(100), nullable=False)
-    last_updated = db.Column(db.DateTime, default=datetime.utcnow)
+    last_updated = db.Column(db.DateTime, default=datetime.now(UTC))
     
     # Relationships
     zones = db.relationship('PathaoZone', backref='city', lazy=True, cascade='all, delete-orphan')
@@ -64,7 +64,7 @@ class PathaoZone(db.Model):
     zone_id = db.Column(db.Integer, unique=True, nullable=False)  # Pathao zone_id
     zone_name = db.Column(db.String(100), nullable=False)
     city_id = db.Column(db.Integer, db.ForeignKey('pathao_city.city_id'), nullable=False)
-    last_updated = db.Column(db.DateTime, default=datetime.utcnow)
+    last_updated = db.Column(db.DateTime, default=datetime.now(UTC))
     
     def __repr__(self):
         return f'<PathaoZone {self.zone_name}>'
@@ -75,7 +75,7 @@ class PathaoToken(db.Model):
     access_token = db.Column(db.Text, nullable=False)
     refresh_token = db.Column(db.Text, nullable=False)
     expires_at = db.Column(db.DateTime, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(UTC))
     
     @property
     def is_expired(self):
@@ -89,7 +89,7 @@ class ProductType(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
     description = db.Column(db.String(200))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(UTC))
     
     # Relationships
     products = db.relationship('Product', backref='product_type', lazy=True)
@@ -103,7 +103,7 @@ class SizeGroup(db.Model):
     name = db.Column(db.String(50), nullable=False)
     product_type_id = db.Column(db.Integer, db.ForeignKey('product_type.id'), nullable=False)
     description = db.Column(db.String(200))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(UTC))
     
     # Relationships
     products = db.relationship('Product', backref='size_group', lazy=True)
@@ -143,7 +143,7 @@ class SizeGroupMapping(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     size_group_id = db.Column(db.Integer, db.ForeignKey('size_group.id'), nullable=False)
     size = db.Column(db.String(20), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(UTC))
     
     # Unique constraint: each size can only belong to one group per product type
     __table_args__ = (db.UniqueConstraint('size_group_id', 'size', name='_size_group_size_uc'),)
@@ -160,8 +160,8 @@ class Product(db.Model):
     size_group_id = db.Column(db.Integer, db.ForeignKey('size_group.id'))
     quantity = db.Column(db.Integer, nullable=False, default=0)
     price = db.Column(db.Numeric(10, 2), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(UTC))
+    updated_at = db.Column(db.DateTime, default=datetime.now(UTC), onupdate=datetime.now(UTC))
     
     # Relationships
     order_items = db.relationship('OrderItem', backref='product', lazy=True)
@@ -284,8 +284,8 @@ class Order(db.Model):
     discount = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
     total_amount = db.Column(db.Numeric(10, 2), nullable=False)
     status = db.Column(db.String(20), nullable=False, default='pending')  # pending, processing, completed, cancelled
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(UTC))
+    updated_at = db.Column(db.DateTime, default=datetime.now(UTC), onupdate=datetime.now(UTC))
     
     # Relationships
     order_items = db.relationship('OrderItem', backref='order', lazy=True, cascade='all, delete-orphan')
@@ -381,7 +381,7 @@ class LoginAttempt(db.Model):
     ip_address = db.Column(db.String(45), nullable=False)  # IPv6 compatible
     username = db.Column(db.String(80))
     success = db.Column(db.Boolean, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.now(UTC))
     
     def __repr__(self):
         return f'<LoginAttempt {self.ip_address} - {self.success}>'
@@ -391,8 +391,8 @@ class PathaoStore(db.Model):
     store_name = db.Column(db.String(100), nullable=False)
     store_address = db.Column(db.Text, nullable=False)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(UTC))
+    updated_at = db.Column(db.DateTime, default=datetime.now(UTC), onupdate=datetime.now(UTC))
     
     def __repr__(self):
         return f'<Store {self.store_name}>'
@@ -403,8 +403,8 @@ class PathaoDelivery(db.Model):
     merchant_order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
     order_status = db.Column(db.String(50), nullable=False)  # Pending, Pickup_Requested, etc.
     delivery_fee = db.Column(db.Numeric(10, 2), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(UTC))
+    updated_at = db.Column(db.DateTime, default=datetime.now(UTC), onupdate=datetime.now(UTC))
     
     # Relationships
     order = db.relationship('Order', backref='pathao_delivery', lazy=True)
