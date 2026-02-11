@@ -144,19 +144,3 @@
     </div>
 </div>
 {% endblock %}
-
-{% block scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Auto-capitalize first letter of product type name
-    const nameInput = document.getElementById('name');
-    if (nameInput) {
-        nameInput.addEventListener('blur', function() {
-            if (this.value) {
-                this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1).toLowerCase();
-            }
-        });
-    }
-});
-</script>
-{% endblock %}
