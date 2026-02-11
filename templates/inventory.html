@@ -3,7 +3,7 @@
 {% block title %}Inventory - Secure Order Management{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 page-header">
     <h1><i class="bi bi-box-seam"></i> Inventory Management</h1>
     <a href="{{ url_for('main.add_product') }}" class="btn btn-success">
         <i class="bi bi-plus-circle"></i> Add Product
@@ -12,7 +12,7 @@
 
 <!-- Search and Filter -->
 <div class="row mb-4">
-    <div class="col-md-6">
+    <div class="col-12 col-md-6">
         <form method="GET" class="d-flex">
             <input type="text" name="search" class="form-control" placeholder="Search products..." value="{{ search }}">
             <button type="submit" class="btn btn-outline-primary ms-2">
@@ -25,7 +25,7 @@
             {% endif %}
         </form>
     </div>
-    <div class="col-md-6 text-end">
+    <div class="col-12 col-md-6 text-md-end">
         <span class="text-muted">
             Showing {{ products.items|length }} of {{ products.total }} products
         </span>
@@ -45,8 +45,8 @@
                             <th>Size</th>
                             <th>Price</th>
                             <th>Stock</th>
-                            <th>Status</th>
-                            <th>Last Updated</th>
+                            <th class="d-none d-sm-table-cell">Status</th>
+                            <th class="d-none d-md-table-cell">Last Updated</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -74,14 +74,14 @@
                                     {{ product.stock_quantity }}
                                 </span>
                             </td>
-                            <td>
+                            <td class="d-none d-sm-table-cell">
                                 {% if product.is_in_stock %}
                                     <span class="badge bg-success">In Stock</span>
                                 {% else %}
                                     <span class="badge bg-danger">Out of Stock</span>
                                 {% endif %}
                             </td>
-                            <td>
+                            <td class="d-none d-md-table-cell">
                                 <small class="text-muted">
                                     {{ product.updated_at.strftime('%m/%d/%Y %H:%M') }}
                                 </small>
@@ -177,16 +177,16 @@
             <div class="card-body">
                 <h6><i class="bi bi-info-circle"></i> Stock Status Legend</h6>
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <span class="badge bg-success">10+</span> Well Stocked
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <span class="badge bg-warning">1-9</span> Low Stock
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <span class="badge bg-danger">0</span> Out of Stock
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <i class="bi bi-exclamation-triangle text-warning"></i> Low Stock Alert
                     </div>
                 </div>
