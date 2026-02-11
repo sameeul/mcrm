@@ -192,21 +192,34 @@ footer {
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
 }
 
+/* Page header helper */
+.page-header {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (max-width: 575.98px) {
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    .btn-sm, .btn-group-sm > .btn {
+        min-height: 36px;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .card-body {
+        padding: 0.75rem;
+    }
+}
+
+@media (max-width: 767.98px) {
     .table-responsive {
         font-size: 0.875rem;
     }
-    
-    .btn-group-sm > .btn, .btn-sm {
-        padding: 0.125rem 0.25rem;
-        font-size: 0.75rem;
-    }
-    
-    .card-body {
-        padding: 1rem;
-    }
-    
+
     .navbar-nav .nav-link {
         padding: 0.5rem 1rem;
     }

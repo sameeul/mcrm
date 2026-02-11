@@ -3,7 +3,7 @@
 {% block title %}Dashboard - Secure Order Management{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 page-header">
     <h1><i class="bi bi-speedometer2"></i> Dashboard</h1>
     <div class="text-muted">
         Welcome back, <strong>{{ current_user.username }}</strong>!
@@ -12,7 +12,7 @@
 
 <!-- Statistics Cards -->
 <div class="row mb-4">
-    <div class="col-md-3 mb-3">
+    <div class="col-6 col-md-3 mb-3">
         <div class="card bg-primary text-white">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
@@ -28,7 +28,7 @@
         </div>
     </div>
 
-    <div class="col-md-3 mb-3">
+    <div class="col-6 col-md-3 mb-3">
         <div class="card bg-warning text-dark">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
@@ -44,7 +44,7 @@
         </div>
     </div>
 
-    <div class="col-md-3 mb-3">
+    <div class="col-6 col-md-3 mb-3">
         <div class="card bg-success text-white">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
@@ -60,7 +60,7 @@
         </div>
     </div>
 
-    <div class="col-md-3 mb-3">
+    <div class="col-6 col-md-3 mb-3">
         <div class="card bg-info text-white">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
@@ -86,22 +86,22 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-3 mb-2">
+                    <div class="col-6 col-md-3 mb-2">
                         <a href="{{ url_for('main.create_order') }}" class="btn btn-success w-100">
                             <i class="bi bi-plus-circle"></i> Create Order
                         </a>
                     </div>
-                    <div class="col-md-3 mb-2">
+                    <div class="col-6 col-md-3 mb-2">
                         <a href="{{ url_for('main.inventory') }}" class="btn btn-primary w-100">
                             <i class="bi bi-box-seam"></i> View Inventory
                         </a>
                     </div>
-                    <div class="col-md-3 mb-2">
+                    <div class="col-6 col-md-3 mb-2">
                         <a href="{{ url_for('main.orders') }}" class="btn btn-info w-100">
                             <i class="bi bi-cart-check"></i> View Orders
                         </a>
                     </div>
-                    <div class="col-md-3 mb-2">
+                    <div class="col-6 col-md-3 mb-2">
                         <a href="{{ url_for('main.add_product') }}" class="btn btn-warning w-100">
                             <i class="bi bi-plus-square"></i> Add Product
                         </a>
@@ -114,7 +114,7 @@
 
 <!-- Recent Orders and Low Stock -->
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-lg-8">
         <div class="card">
             <div class="card-header">
                 <h5><i class="bi bi-clock-history"></i> Recent Orders</h5>
@@ -173,7 +173,7 @@
         </div>
     </div>
     
-    <div class="col-md-4">
+    <div class="col-lg-4">
         <div class="card">
             <div class="card-header">
                 <h5><i class="bi bi-exclamation-triangle"></i> Low Stock Alert</h5>

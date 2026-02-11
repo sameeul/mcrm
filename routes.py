@@ -288,16 +288,21 @@ def update_order_status():
 @main.route('/reports')
 @login_required
 def reports():
+    return render_template('reports.html')
+
+@main.route('/reports/sales')
+@login_required
+def report_sales():
     form = ReportFilterForm()
-    
+
     # Default to last 30 days
     end_date = datetime.now().date()
     start_date = end_date - timedelta(days=30)
-    
+
     form.start_date.data = start_date.strftime('%Y-%m-%d')
     form.end_date.data = end_date.strftime('%Y-%m-%d')
-    
-    return render_template('reports.html', form=form)
+
+    return render_template('report_sales.html', form=form)
 
 @main.route('/generate_report', methods=['POST'])
 @login_required
@@ -346,7 +351,7 @@ def generate_report():
         
         return render_template('report_results.html', report=report_data)
     
-    return render_template('reports.html', form=form)
+    return render_template('report_sales.html', form=form)
 
 @main.route('/manage_users')
 @login_required

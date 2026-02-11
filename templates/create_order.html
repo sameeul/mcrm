@@ -3,7 +3,7 @@
 {% block title %}Create Order - Secure Order Management{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 page-header">
     <h1><i class="bi bi-cart-plus"></i> Create New Order</h1>
     <a href="{{ url_for('main.orders') }}" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left"></i> Back to Orders
@@ -11,7 +11,7 @@
 </div>
 
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-lg-8">
         <form method="POST" class="needs-validation" novalidate id="orderForm">
             {{ form.hidden_tag() }}
             {{ form.products_data() }}
@@ -23,7 +23,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-sm-6 mb-3">
                             {{ form.customer_name.label(class="form-label") }}
                             {{ form.customer_name(class="form-control" + (" is-invalid" if form.customer_name.errors else "")) }}
                             {% if form.customer_name.errors %}
@@ -34,8 +34,8 @@
                                 </div>
                             {% endif %}
                         </div>
-                        
-                        <div class="col-md-6 mb-3">
+
+                        <div class="col-sm-6 mb-3">
                             {{ form.customer_phone.label(class="form-label") }}
                             {{ form.customer_phone(class="form-control" + (" is-invalid" if form.customer_phone.errors else ""), placeholder="e.g., +8801XXXXXXXXX") }}
                             {% if form.customer_phone.errors %}
@@ -78,7 +78,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-4 mb-3">
+                        <div class="col-sm-6 col-md-4 mb-3">
                             {{ form.city_id.label(class="form-label") }}
                             {{ form.city_id(class="form-select" + (" is-invalid" if form.city_id.errors else ""), id="city_id") }}
                             {% if form.city_id.errors %}
@@ -95,7 +95,7 @@
                             </div>
                         </div>
                         
-                        <div class="col-md-4 mb-3">
+                        <div class="col-sm-6 col-md-4 mb-3">
                             {{ form.zone_id.label(class="form-label") }}
                             {{ form.zone_id(class="form-select" + (" is-invalid" if form.zone_id.errors else ""), id="zone_id", disabled=true) }}
                             {% if form.zone_id.errors %}
@@ -152,24 +152,24 @@
                     <div id="productRowTemplate" class="d-none">
                         <div class="product-row border rounded p-3 mb-3">
                             <div class="row align-items-center">
-                                <div class="col-md-6">
+                                <div class="col-12 col-sm-6">
                                     <label class="form-label">Product</label>
                                     <select class="form-select product-select" required>
                                         <option value="">Select a product...</option>
                                     </select>
                                     <div class="invalid-feedback">Please select a product</div>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-6 col-sm-3">
                                     <label class="form-label">Quantity</label>
                                     <input type="number" class="form-control quantity-input" min="1" value="1" required>
                                     <div class="invalid-feedback">Please enter a valid quantity</div>
                                     <small class="form-text text-muted stock-info"></small>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-4 col-sm-2">
                                     <label class="form-label">Subtotal</label>
                                     <div class="form-control-plaintext fw-bold subtotal">$0.00</div>
                                 </div>
-                                <div class="col-md-1">
+                                <div class="col-2 col-sm-1">
                                     <label class="form-label">&nbsp;</label>
                                     <button type="button" class="btn btn-outline-danger btn-sm d-block remove-product-btn">
                                         <i class="bi bi-trash"></i>
@@ -188,7 +188,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-sm-6 mb-3">
                             {{ form.delivery_charge.label(class="form-label") }}
                             <div class="input-group">
                                 <span class="input-group-text">{{ CURRENCY_SYMBOL }}</span>
@@ -204,7 +204,7 @@
                             <div class="form-text">Enter delivery charges (if any)</div>
                         </div>
                         
-                        <div class="col-md-6 mb-3">
+                        <div class="col-sm-6 mb-3">
                             {{ form.discount.label(class="form-label") }}
                             <div class="input-group">
                                 <span class="input-group-text">{{ CURRENCY_SYMBOL }}</span>
@@ -271,7 +271,7 @@
     </div>
     
     <!-- Order Information Sidebar -->
-    <div class="col-md-4">
+    <div class="col-lg-4">
         <div class="card">
             <div class="card-header">
                 <h6><i class="bi bi-info-circle"></i> Order Information</h6>
@@ -372,19 +372,19 @@
             <div class="card-body">
                 <h6><i class="bi bi-question-circle"></i> Need Help?</h6>
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <strong>Customer Info:</strong><br>
                         <small class="text-muted">Enter complete customer details for delivery</small>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <strong>Location Selection:</strong><br>
                         <small class="text-muted">Use cascading dropdowns for precise addressing</small>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <strong>Product Selection:</strong><br>
                         <small class="text-muted">Add multiple products to create comprehensive orders</small>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <strong>Order Processing:</strong><br>
                         <small class="text-muted">Orders are processed immediately upon creation</small>
                     </div>

@@ -3,7 +3,7 @@
 {% block title %}Orders - Secure Order Management{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 page-header">
     <h1><i class="bi bi-cart-check"></i> Order Management</h1>
     <a href="{{ url_for('main.create_order') }}" class="btn btn-success">
         <i class="bi bi-plus-circle"></i> Create Order
@@ -12,7 +12,7 @@
 
 <!-- Filter and Search -->
 <div class="row mb-4">
-    <div class="col-md-6">
+    <div class="col-12 col-md-6">
         <form method="GET" class="d-flex">
             <select name="status" class="form-select me-2" onchange="this.form.submit()">
                 <option value="">All Statuses</option>
@@ -28,7 +28,7 @@
             {% endif %}
         </form>
     </div>
-    <div class="col-md-6 text-end">
+    <div class="col-12 col-md-6 text-md-end">
         <span class="text-muted">
             Showing {{ orders.items|length }} of {{ orders.total }} orders
             {% if status_filter %}({{ status_filter.title() }} only){% endif %}
@@ -46,10 +46,10 @@
                         <tr>
                             <th>Order #</th>
                             <th>Customer</th>
-                            <th>Items</th>
+                            <th class="d-none d-sm-table-cell">Items</th>
                             <th>Total Amount</th>
                             <th>Status</th>
-                            <th>Order Date</th>
+                            <th class="d-none d-md-table-cell">Order Date</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -62,7 +62,7 @@
                             <td>
                                 <i class="bi bi-person"></i> {{ order.customer.name }}
                             </td>
-                            <td>
+                            <td class="d-none d-sm-table-cell">
                                 <span class="badge bg-secondary">{{ order.item_count }} items</span>
                             </td>
                             <td>
@@ -74,7 +74,7 @@
                                     {{ order.status.title() }}
                                 </span>
                             </td>
-                            <td>
+                            <td class="d-none d-md-table-cell">
                                 <div>{{ order.created_at.strftime('%m/%d/%Y') }}</div>
                                 <small class="text-muted">{{ order.created_at.strftime('%I:%M %p') }}</small>
                             </td>
@@ -172,16 +172,16 @@
             <div class="card-body">
                 <h6><i class="bi bi-info-circle"></i> Order Status Guide</h6>
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <span class="badge bg-warning">Pending</span> - Order placed, awaiting processing
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <span class="badge bg-info">Processing</span> - Order is being prepared
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <span class="badge bg-success">Completed</span> - Order fulfilled successfully
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <span class="badge bg-secondary">Cancelled</span> - Order was cancelled
                     </div>
                 </div>
