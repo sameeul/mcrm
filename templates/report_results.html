@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Report Results - Secure Order Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-bar-chart-line"></i> Report Results</h1>
+    <div>
+        <a href="{{ url_for('main.report_sales') }}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-repeat"></i> New Report
+        </a>
+        <a href="{{ url_for('main.reports') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Reports
+        </a>
+    </div>
+</div>
+
+<p class="text-muted mb-4">
+    Showing results from <strong>{{ report.start_date }}</strong> to <strong>{{ report.end_date }}</strong>
+</p>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ report.total_orders }}</h4>
+                        <p class="mb-0">Total Orders</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-cart-check fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ report.total_revenue|currency }}</h4>
+                        <p class="mb-0">Total Revenue</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-currency-dollar fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ report.completed_orders }}</h4>
+                        <p class="mb-0">Completed Orders</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-check-circle fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Products -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-trophy"></i> Top Products</h5>
+            </div>
+            <div class="card-body">
+                {% if report.top_products %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for name, data in report.top_products %}
+                                <tr>
+                                    <td>{{ name }}</td>
+                                    <td>{{ data.quantity }}</td>
+                                    <td>{{ data.revenue|currency }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-3">No product data for this period.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders List -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-list-ul"></i> Orders</h5>
+            </div>
+            <div class="card-body">
+                {% if report.orders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Customer</th>
+                                    <th>Status</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in report.orders %}
+                                <tr>
+                                    <td>{{ order.created_at.strftime('%m/%d/%Y') }}</td>
+                                    <td>{{ order.customer.name }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if order.status == 'completed' else 'warning' if order.status == 'pending' else 'info' if order.status == 'processing' else 'secondary' }}">
+                                            {{ order.status.title() }}
+                                        </span>
+                                    </td>
+                                    <td>{{ order.total_amount|currency }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-3">No orders for this period.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
