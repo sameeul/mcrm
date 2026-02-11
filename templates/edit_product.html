@@ -40,11 +40,11 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            {{ form.color.label(class="form-label") }}
-                                            {{ form.color(class="form-select" + (" is-invalid" if form.color.errors else "")) }}
-                                            {% if form.color.errors %}
+                                            {{ form.name.label(class="form-label") }}
+                                            {{ form.name(class="form-select" + (" is-invalid" if form.name.errors else "")) }}
+                                            {% if form.name.errors %}
                                                 <div class="invalid-feedback">
-                                                    {% for error in form.color.errors %}
+                                                    {% for error in form.name.errors %}
                                                         {{ error }}
                                                     {% endfor %}
                                                 </div>
