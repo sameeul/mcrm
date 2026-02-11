@@ -89,7 +89,7 @@ class ProductType(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
     description = db.Column(db.String(200))
-    created_at = db.Column(db.DateTime, default= )
+    created_at = db.Column(db.DateTime, default=datetime.now(UTC))
     
     # Relationships
     products = db.relationship('Product', backref='product_type', lazy=True)
