@@ -3,7 +3,7 @@ from datetime import timedelta
 
 class Config:
     # Security Configuration
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
+    SECRET_KEY = os.environ.get('FLASK_SECRET_KEY')
     WTF_CSRF_ENABLED = True
     WTF_CSRF_TIME_LIMIT = 3600  # 1 hour
     
@@ -18,7 +18,7 @@ class Config:
     SESSION_COOKIE_SAMESITE = 'Lax'
     
     # Rate Limiting
-    RATELIMIT_STORAGE_URL = "memory://"
+    RATELIMIT_STORAGE_URI = os.environ.get("REDIS_URL")  or "memory://"
     RATELIMIT_DEFAULT = "100 per hour"
     
     # Application Settings
@@ -29,6 +29,15 @@ class Config:
     CURRENCY_FORMAT = '{symbol}{amount:.0f}'  # ৳150 (no decimals)
     CURRENCY_CODE = 'BDT'
     
+    # Pathao API Configuration
+    PATHAO_BASE_URL = os.environ.get('PATHAO_BASE_URL')
+    PATHAO_CLIENT_ID = os.environ.get('PATHAO_CLIENT_ID')
+    PATHAO_CLIENT_SECRET = os.environ.get('PATHAO_CLIENT_SECRET')
+    PATHAO_USERNAME = os.environ.get('PATHAO_USERNAME')
+    PATHAO_PASSWORD = os.environ.get('PATHAO_PASSWORD')
+    PATHAO_GRANT_TYPE = os.environ.get('PATHAO_GRANT_TYPE')
+    CACHE_DURATION_HOURS = 24  # Cache location data for 24 hours
+
 class DevelopmentConfig(Config):
     DEBUG = True
     SESSION_COOKIE_SECURE = False  # Allow HTTP in development

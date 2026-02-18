@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from sqlalchemy import func, desc
-from datetime import datetime, timedelta
-from models import db, User, Product, ProductType, SizeGroup, SizeGroupMapping, Order, OrderItem, Customer
+from datetime import datetime, timedelta, UTC
+from models import db, User, Product, ProductType, SizeGroup, SizeGroupMapping, Order, OrderItem, Customer, PathaoDelivery, PathaoStore
 from forms import ProductForm, ProductTypeForm, SizeGroupForm, OrderItemForm, UpdateOrderStatusForm, ReportFilterForm, CreateOrderForm
 from pathao_service import PathaoService
 from auth import admin_required
@@ -21,28 +21,17 @@ def dashboard():
     # Get dashboard statistics
     stats = {}
     
-    if current_user.is_admin():
-        # Admin sees all statistics
-        stats['total_products'] = Product.query.count()
-        stats['low_stock_products'] = Product.query.filter(Product.quantity < 10).count()
-        stats['total_orders'] = Order.query.count()
-        stats['pending_orders'] = Order.query.filter_by(status='pending').count()
-        stats['total_users'] = User.query.filter_by(is_active=True).count()
-        
-        # Recent orders
-        recent_orders = Order.query.order_by(desc(Order.created_at)).limit(5).all()
-        
-        # Low stock products
-        low_stock_products = Product.query.filter(Product.quantity < 10).limit(5).all()
-    else:
-        # Regular users see their own statistics
-        stats['my_orders'] = Order.query.filter_by(user_id=current_user.id).count()
-        stats['pending_orders'] = Order.query.filter_by(user_id=current_user.id, status='pending').count()
-        stats['completed_orders'] = Order.query.filter_by(user_id=current_user.id, status='completed').count()
-        
-        # User's recent orders
-        recent_orders = Order.query.filter_by(user_id=current_user.id).order_by(desc(Order.created_at)).limit(5).all()
-        low_stock_products = []
+    stats['total_products'] = Product.query.count()
+    stats['low_stock_products'] = Product.query.filter(Product.quantity < 10).count()
+    stats['total_orders'] = Order.query.count()
+    stats['pending_orders'] = Order.query.filter_by(status='pending').count()
+    stats['total_users'] = User.query.filter_by(is_active=True).count()
+
+    # Recent orders
+    recent_orders = Order.query.order_by(desc(Order.created_at)).limit(5).all()
+
+    # Low stock products
+    low_stock_products = Product.query.filter(Product.quantity < 10).limit(5).all()
     
     return render_template('dashboard.html', 
                          stats=stats, 
@@ -59,7 +48,7 @@ def inventory():
     if search:
         query = query.filter(Product.name.contains(search))
     
-    products = query.order_by(Product.name).paginate(
+    products = query.join(Product.product_type).order_by(ProductType.name, Product.name).paginate(
         page=page, per_page=20, error_out=False
     )
     
@@ -67,7 +56,6 @@ def inventory():
 
 @main.route('/add_product', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def add_product():
     form = ProductForm()
     if form.validate_on_submit():
@@ -101,7 +89,6 @@ def add_product():
 
 @main.route('/edit_product/<int:product_id>', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def edit_product(product_id):
     product = Product.query.get_or_404(product_id)
     form = ProductForm(obj=product, product_id=product_id)
@@ -117,7 +104,7 @@ def edit_product(product_id):
         product.quantity = form.quantity.data
         product.price = form.price.data
         product.size_group_id = form.size_group_id.data if form.size_group_id.data != 0 else None
-        product.updated_at = datetime.utcnow()
+        product.updated_at = datetime.now(UTC)
         
         # Auto-assign size group if not manually selected
         if not product.size_group_id:
@@ -135,7 +122,6 @@ def edit_product(product_id):
 
 @main.route('/delete_product/<int:product_id>')
 @login_required
-@admin_required
 def delete_product(product_id):
     product = Product.query.get_or_404(product_id)
     
@@ -160,11 +146,8 @@ def orders():
     page = request.args.get('page', 1, type=int)
     status_filter = request.args.get('status', '', type=str)
     
-    if current_user.is_admin():
-        query = Order.query
-    else:
-        query = Order.query.filter_by(user_id=current_user.id)
-    
+    query = Order.query
+
     if status_filter:
         query = query.filter_by(status=status_filter)
     
@@ -276,11 +259,6 @@ def create_order():
 def order_details(order_id):
     order = Order.query.get_or_404(order_id)
     
-    # Check access permissions
-    if not current_user.is_admin() and order.user_id != current_user.id:
-        flash('Access denied', 'error')
-        return redirect(url_for('main.orders'))
-    
     # Create form for CSRF token generation
     update_status_form = UpdateOrderStatusForm()
     
@@ -288,14 +266,13 @@ def order_details(order_id):
 
 @main.route('/update_order_status', methods=['POST'])
 @login_required
-@admin_required
 def update_order_status():
     form = UpdateOrderStatusForm()
     if form.validate_on_submit():
         order = Order.query.get_or_404(form.order_id.data)
         old_status = order.status
         order.status = form.status.data
-        order.updated_at = datetime.utcnow()
+        order.updated_at = datetime.now(UTC)
         
         try:
             db.session.commit()
@@ -311,16 +288,21 @@ def update_order_status():
 @main.route('/reports')
 @login_required
 def reports():
+    return render_template('reports.html')
+
+@main.route('/reports/sales')
+@login_required
+def report_sales():
     form = ReportFilterForm()
-    
+
     # Default to last 30 days
     end_date = datetime.now().date()
     start_date = end_date - timedelta(days=30)
-    
+
     form.start_date.data = start_date.strftime('%Y-%m-%d')
     form.end_date.data = end_date.strftime('%Y-%m-%d')
-    
-    return render_template('reports.html', form=form)
+
+    return render_template('report_sales.html', form=form)
 
 @main.route('/generate_report', methods=['POST'])
 @login_required
@@ -332,11 +314,8 @@ def generate_report():
         end_date = end_date.replace(hour=23, minute=59, second=59)  # End of day
         
         # Base query
-        if current_user.is_admin():
-            orders_query = Order.query
-        else:
-            orders_query = Order.query.filter_by(user_id=current_user.id)
-        
+        orders_query = Order.query
+
         # Filter by date range
         orders = orders_query.filter(
             Order.created_at >= start_date,
@@ -372,7 +351,7 @@ def generate_report():
         
         return render_template('report_results.html', report=report_data)
     
-    return render_template('reports.html', form=form)
+    return render_template('report_sales.html', form=form)
 
 @main.route('/manage_users')
 @login_required
@@ -385,19 +364,17 @@ def manage_users():
     return render_template('manage_users.html', users=users)
 
 # Product Type Management Routes
-@main.route('/admin/product-types')
+@main.route('/product-types')
 @login_required
-@admin_required
 def product_types():
     page = request.args.get('page', 1, type=int)
     product_types = ProductType.query.order_by(ProductType.name).paginate(
         page=page, per_page=20, error_out=False
     )
-    return render_template('admin/product_types.html', product_types=product_types)
+    return render_template('product_types.html', product_types=product_types)
 
-@main.route('/admin/product-types/add', methods=['GET', 'POST'])
+@main.route('/product-types/add', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def add_product_type():
     form = ProductTypeForm()
     if form.validate_on_submit():
@@ -414,11 +391,10 @@ def add_product_type():
             db.session.rollback()
             flash('Error adding product type. Please try again.', 'error')
     
-    return render_template('admin/add_product_type.html', form=form)
+    return render_template('add_product_type.html', form=form)
 
-@main.route('/admin/product-types/edit/<int:product_type_id>', methods=['GET', 'POST'])
+@main.route('/product-types/edit/<int:product_type_id>', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def edit_product_type(product_type_id):
     product_type = ProductType.query.get_or_404(product_type_id)
     form = ProductTypeForm(obj=product_type, product_type_id=product_type_id)
@@ -435,11 +411,10 @@ def edit_product_type(product_type_id):
             db.session.rollback()
             flash('Error updating product type. Please try again.', 'error')
     
-    return render_template('admin/edit_product_type.html', form=form, product_type=product_type)
+    return render_template('edit_product_type.html', form=form, product_type=product_type)
 
-@main.route('/admin/product-types/delete/<int:product_type_id>')
+@main.route('/product-types/delete/<int:product_type_id>')
 @login_required
-@admin_required
 def delete_product_type(product_type_id):
     product_type = ProductType.query.get_or_404(product_type_id)
     
@@ -459,9 +434,8 @@ def delete_product_type(product_type_id):
     return redirect(url_for('main.product_types'))
 
 # Size Group Management Routes
-@main.route('/admin/size-groups')
+@main.route('/size-groups')
 @login_required
-@admin_required
 def size_groups():
     page = request.args.get('page', 1, type=int)
     product_type_filter = request.args.get('product_type', '', type=str)
@@ -477,14 +451,13 @@ def size_groups():
     # Get product types for filter dropdown
     product_types = ProductType.query.order_by(ProductType.name).all()
     
-    return render_template('admin/size_groups.html', 
+    return render_template('size_groups.html', 
                          size_groups=size_groups, 
                          product_types=product_types,
                          product_type_filter=product_type_filter)
 
-@main.route('/admin/size-groups/add', methods=['GET', 'POST'])
+@main.route('/size-groups/add', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def add_size_group():
     form = SizeGroupForm()
     if form.validate_on_submit():
@@ -527,11 +500,10 @@ def add_size_group():
             db.session.rollback()
             flash('Error adding size group. Please try again.', 'error')
     
-    return render_template('admin/add_size_group.html', form=form)
+    return render_template('add_size_group.html', form=form)
 
-@main.route('/admin/size-groups/edit/<int:size_group_id>', methods=['GET', 'POST'])
+@main.route('/size-groups/edit/<int:size_group_id>', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def edit_size_group(size_group_id):
     size_group = SizeGroup.query.get_or_404(size_group_id)
     
@@ -562,11 +534,10 @@ def edit_size_group(size_group_id):
             db.session.rollback()
             flash('Error updating size group. Please try again.', 'error')
     
-    return render_template('admin/edit_size_group.html', form=form, size_group=size_group)
+    return render_template('edit_size_group.html', form=form, size_group=size_group)
 
-@main.route('/admin/size-groups/delete/<int:size_group_id>')
+@main.route('/size-groups/delete/<int:size_group_id>')
 @login_required
-@admin_required
 def delete_size_group(size_group_id):
     size_group = SizeGroup.query.get_or_404(size_group_id)
     
@@ -649,3 +620,193 @@ def api_products():
         ])
     except Exception as e:
         return jsonify({'error': 'Failed to fetch products'}), 500
+
+@main.route('/api/parse-address', methods=['POST'])
+@login_required
+def api_parse_address():
+    """API endpoint to parse address using Pathao service"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        address = data.get('address', '').strip()
+        if not address:
+            return jsonify({'error': 'Address is required'}), 400
+        
+        parsed_data = PathaoService.parse_address(address)
+        if not parsed_data:
+            return jsonify({'error': 'Failed to parse address or no results found'}), 404
+        
+        return jsonify({'success': True, 'data': parsed_data})
+    except Exception as e:
+        current_app.logger.error(f"Error parsing address: {str(e)}")
+        return jsonify({'error': 'Failed to parse address'}), 500
+
+
+@main.route('/api/stores')
+@login_required
+def api_stores():
+    """API endpoint to get list of stores from Pathao with 24-hour caching"""
+    try:
+        # Attempt to fetch from PathaoService (which handles caching)
+        stores = PathaoService.get_stores()
+
+        if stores:
+            # Format for frontend
+            store_data = [
+                {
+                    'id': store.id,
+                    'name': store.store_name,
+                    'address': store.store_address
+                }
+                for store in stores
+                if store.id is not None  # Ensure valid ID
+            ]
+            return jsonify(store_data)
+        
+        # Fallback to active local stores (shouldn't happen unless DB is empty or failed)
+        current_app.logger.warning("No Pathao stores available, falling back to local store data")
+        fallback_stores = PathaoStore.query.filter_by(is_active=True).order_by(PathaoStore.store_name).all()
+        fallback_data = [
+            {
+                'id': f"local_{store.id}",
+                'name': f"{store.store_name} (Local)",
+                'address': store.store_address
+            }
+            for store in fallback_stores
+        ]
+        return jsonify(fallback_data)
+
+    except Exception as e:
+        current_app.logger.error(f"Error in /api/stores: {str(e)}")
+        # Final fallback
+        try:
+            stores = PathaoStore.query.filter_by(is_active=True).order_by(PathaoStore.store_name).all()
+            store_data = [
+                {
+                    'id': f"local_{store.id}",
+                    'name': f"{store.store_name} (Local)",
+                    'address': store.store_address
+                }
+                for store in stores
+            ]
+            return jsonify(store_data)
+        except Exception as fallback_error:
+            current_app.logger.error(f"Fallback store fetch failed: {str(fallback_error)}")
+            return jsonify({'error': 'Failed to fetch stores'}), 500
+
+
+# User Management API Routes
+@main.route('/api/users/<int:user_id>/toggle-status', methods=['POST'])
+@login_required
+@admin_required
+def api_toggle_user_status(user_id):
+    """API endpoint to toggle user active status"""
+    try:
+        user = User.query.get_or_404(user_id)
+        
+        # Prevent admin from deactivating themselves
+        if user.id == current_user.id:
+            return jsonify({'success': False, 'message': 'Cannot deactivate your own account'}), 400
+        
+        user.is_active = not user.is_active
+        db.session.commit()
+        
+        status = 'activated' if user.is_active else 'deactivated'
+        return jsonify({'success': True, 'message': f'User {user.username} has been {status}'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': 'Failed to update user status'}), 500
+
+@main.route('/api/users/<int:user_id>/toggle-role', methods=['POST'])
+@login_required
+@admin_required
+def api_toggle_user_role(user_id):
+    """API endpoint to toggle user role between user and admin"""
+    try:
+        user = User.query.get_or_404(user_id)
+        
+        # Prevent changing own role
+        if user.id == current_user.id:
+            return jsonify({'success': False, 'message': 'Cannot change your own role'}), 400
+        
+        user.role = 'admin' if user.role == 'user' else 'user'
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': f'User {user.username} role changed to {user.role}'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': 'Failed to update user role'}), 500
+
+@main.route('/api/users/<int:user_id>/delete', methods=['DELETE'])
+@login_required
+@admin_required
+def api_delete_user(user_id):
+    """API endpoint to delete a user"""
+    try:
+        user = User.query.get_or_404(user_id)
+        
+        # Prevent admin from deleting themselves
+        if user.id == current_user.id:
+            return jsonify({'success': False, 'message': 'Cannot delete your own account'}), 400
+        
+        # Check if user has associated orders
+        if user.orders:
+            return jsonify({'success': False, 'message': 'Cannot delete user with existing orders'}), 400
+        
+        username = user.username
+        db.session.delete(user)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': f'User {username} has been deleted'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': 'Failed to delete user'}), 500
+
+@main.route('/request_shipping/<int:order_id>', methods=['POST'])
+@login_required
+def request_shipping(order_id):
+    order = Order.query.get_or_404(order_id)
+    if order.shipping_requested:
+        flash('Shipping already requested for this order.', 'info')
+    else:
+        # Get store_id from form data
+        pathao_store_id = request.form.get('store_id')
+        store_name = PathaoStore.query.get(pathao_store_id).store_name
+        # Trigger create order request to Pathao
+        from pathao_service import PathaoService
+        try:
+            response = PathaoService.create_order(order, store_id=pathao_store_id)
+            if response.get('code') == 200:
+                # Extract delivery data from response
+                delivery_data = response.get('data', {})                
+                # Create PathaoDelivery record
+                try:
+                    from models import PathaoDelivery
+                    pathao_delivery = PathaoDelivery(
+                        consignment_id=delivery_data.get('consignment_id'),
+                        merchant_order_id=order.id,
+                        order_status=delivery_data.get('order_status', 'Pending'),
+                        delivery_fee=delivery_data.get('delivery_fee', 0)
+                    )
+                    
+                    db.session.add(pathao_delivery)
+                    order.shipping_requested = True
+                    order.updated_at = datetime.now(UTC)
+                    db.session.commit()
+                    
+                    flash(f'Shipping request sent to Pathao successfully from {store_name}. Tracking ID: {pathao_delivery.consignment_id}', 'success')
+                except Exception as db_error:
+                    db.session.rollback()
+                    # Still mark as requested since Pathao accepted the order
+                    order.shipping_requested = True
+                    order.updated_at = datetime.now(UTC)
+                    db.session.commit()
+                    flash(f'Shipping request sent to Pathao successfully from {store_name}, but failed to save tracking info: {str(db_error)}', 'warning')
+                    
+            else:
+                flash('Failed to send order to Pathao: ' + response.get('message', 'Unknown error'), 'error')
+        except Exception as e:
+            flash(f'Pathao API error: {str(e)}', 'error')
+    return redirect(url_for('main.order_details', order_id=order.id))

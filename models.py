@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, UTC
 
 db = SQLAlchemy()
 
@@ -12,7 +12,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='user')  # 'admin' or 'user'
     is_active = db.Column(db.Boolean, default=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(UTC))
     last_login = db.Column(db.DateTime)
     
     # Relationships
@@ -38,8 +38,8 @@ class Customer(db.Model):
     name = db.Column(db.String(100), nullable=False)
     phone = db.Column(db.String(20), nullable=False)
     address = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(UTC))
+    updated_at = db.Column(db.DateTime, default=datetime.now(UTC), onupdate=datetime.now(UTC))
     
     # Relationships
     orders = db.relationship('Order', backref='customer', lazy=True)
@@ -51,7 +51,7 @@ class PathaoCity(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     city_id = db.Column(db.Integer, unique=True, nullable=False)  # Pathao city_id
     city_name = db.Column(db.String(100), nullable=False)
-    last_updated = db.Column(db.DateTime, default=datetime.utcnow)
+    last_updated = db.Column(db.DateTime, default=datetime.now(UTC))
     
     # Relationships
     zones = db.relationship('PathaoZone', backref='city', lazy=True, cascade='all, delete-orphan')
@@ -64,7 +64,7 @@ class PathaoZone(db.Model):
     zone_id = db.Column(db.Integer, unique=True, nullable=False)  # Pathao zone_id
     zone_name = db.Column(db.String(100), nullable=False)
     city_id = db.Column(db.Integer, db.ForeignKey('pathao_city.city_id'), nullable=False)
-    last_updated = db.Column(db.DateTime, default=datetime.utcnow)
+    last_updated = db.Column(db.DateTime, default=datetime.now(UTC))
     
     def __repr__(self):
         return f'<PathaoZone {self.zone_name}>'
@@ -75,12 +75,12 @@ class PathaoToken(db.Model):
     access_token = db.Column(db.Text, nullable=False)
     refresh_token = db.Column(db.Text, nullable=False)
     expires_at = db.Column(db.DateTime, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(UTC))
     
     @property
     def is_expired(self):
         """Check if token is expired"""
-        return datetime.utcnow() >= self.expires_at
+        return datetime.now(UTC) >= self.expires_at
     
     def __repr__(self):
         return f'<PathaoToken expires_at={self.expires_at}>'
@@ -89,7 +89,7 @@ class ProductType(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
     description = db.Column(db.String(200))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(UTC))
     
     # Relationships
     products = db.relationship('Product', backref='product_type', lazy=True)
@@ -103,7 +103,7 @@ class SizeGroup(db.Model):
     name = db.Column(db.String(50), nullable=False)
     product_type_id = db.Column(db.Integer, db.ForeignKey('product_type.id'), nullable=False)
     description = db.Column(db.String(200))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(UTC))
     
     # Relationships
     products = db.relationship('Product', backref='size_group', lazy=True)
@@ -143,7 +143,7 @@ class SizeGroupMapping(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     size_group_id = db.Column(db.Integer, db.ForeignKey('size_group.id'), nullable=False)
     size = db.Column(db.String(20), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(UTC))
     
     # Unique constraint: each size can only belong to one group per product type
     __table_args__ = (db.UniqueConstraint('size_group_id', 'size', name='_size_group_size_uc'),)
@@ -155,13 +155,13 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)  # Specific product name/style
     product_type_id = db.Column(db.Integer, db.ForeignKey('product_type.id'), nullable=False)
-    product_code = db.Column(db.String(5), unique=True, nullable=False)
+    product_code = db.Column(db.String(5), nullable=False)
     size = db.Column(db.String(20), nullable=False)
     size_group_id = db.Column(db.Integer, db.ForeignKey('size_group.id'))
     quantity = db.Column(db.Integer, nullable=False, default=0)
     price = db.Column(db.Numeric(10, 2), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(UTC))
+    updated_at = db.Column(db.DateTime, default=datetime.now(UTC), onupdate=datetime.now(UTC))
     
     # Relationships
     order_items = db.relationship('OrderItem', backref='product', lazy=True)
@@ -241,7 +241,7 @@ class Product(db.Model):
                     compatible.quantity -= used
                     remaining -= used
         
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
         return remaining == 0
     
     def auto_assign_size_group(self):
@@ -277,14 +277,15 @@ class Order(db.Model):
     city_name = db.Column(db.String(100), nullable=True)
     zone_id = db.Column(db.Integer, nullable=True)  # Pathao zone_id  
     zone_name = db.Column(db.String(100), nullable=True)
+    shipping_requested = db.Column(db.Boolean, default=False)  # Whether shipping is requested
     
     # Order Financial Details
     delivery_charge = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
     discount = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
     total_amount = db.Column(db.Numeric(10, 2), nullable=False)
     status = db.Column(db.String(20), nullable=False, default='pending')  # pending, processing, completed, cancelled
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(UTC))
+    updated_at = db.Column(db.DateTime, default=datetime.now(UTC), onupdate=datetime.now(UTC))
     
     # Relationships
     order_items = db.relationship('OrderItem', backref='order', lazy=True, cascade='all, delete-orphan')
@@ -312,7 +313,7 @@ class Order(db.Model):
     @property
     def final_total(self):
         """Get final total including delivery charges and discount"""
-        return self.products_subtotal + self.delivery_charge - self.discount
+        return int(self.products_subtotal) + int(self.delivery_charge) - int(self.discount)
     
     def calculate_total(self):
         """Calculate total amount including delivery charges and discount"""
@@ -380,7 +381,56 @@ class LoginAttempt(db.Model):
     ip_address = db.Column(db.String(45), nullable=False)  # IPv6 compatible
     username = db.Column(db.String(80))
     success = db.Column(db.Boolean, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.now(UTC))
     
     def __repr__(self):
         return f'<LoginAttempt {self.ip_address} - {self.success}>'
+
+class PathaoStore(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    store_name = db.Column(db.String(100), nullable=False)
+    store_address = db.Column(db.Text, nullable=False)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now(UTC))
+    updated_at = db.Column(db.DateTime, default=datetime.now(UTC), onupdate=datetime.now(UTC))
+    
+    def __repr__(self):
+        return f'<Store {self.store_name}>'
+
+class PathaoDelivery(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    consignment_id = db.Column(db.String(50), unique=True, nullable=False)  # Pathao's tracking ID
+    merchant_order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    order_status = db.Column(db.String(50), nullable=False)  # Pending, Pickup_Requested, etc.
+    delivery_fee = db.Column(db.Numeric(10, 2), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now(UTC))
+    updated_at = db.Column(db.DateTime, default=datetime.now(UTC), onupdate=datetime.now(UTC))
+    
+    # Relationships
+    order = db.relationship('Order', backref='pathao_delivery', lazy=True)
+    
+    @property
+    def is_delivered(self):
+        """Check if delivery is completed"""
+        return self.order_status.lower() in ['delivered', 'completed']
+    
+    @property
+    def is_pending(self):
+        """Check if delivery is still pending"""
+        return self.order_status.lower() == 'pending'
+    
+    @property
+    def is_in_transit(self):
+        """Check if delivery is in transit"""
+        transit_statuses = ['pickup_requested', 'picked_up', 'in_transit', 'out_for_delivery']
+        return self.order_status.lower().replace(' ', '_') in transit_statuses
+    
+    def update_status(self, new_status, new_delivery_fee=None):
+        """Update delivery status and optionally delivery fee"""
+        self.order_status = new_status
+        if new_delivery_fee is not None:
+            self.delivery_fee = new_delivery_fee
+        self.updated_at = datetime.now(UTC)
+    
+    def __repr__(self):
+        return f'<PathaoDelivery {self.consignment_id} - {self.order_status}>'

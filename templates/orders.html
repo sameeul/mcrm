@@ -3,7 +3,7 @@
 {% block title %}Orders - Secure Order Management{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 page-header">
     <h1><i class="bi bi-cart-check"></i> Order Management</h1>
     <a href="{{ url_for('main.create_order') }}" class="btn btn-success">
         <i class="bi bi-plus-circle"></i> Create Order
@@ -12,7 +12,7 @@
 
 <!-- Filter and Search -->
 <div class="row mb-4">
-    <div class="col-md-6">
+    <div class="col-12 col-md-6">
         <form method="GET" class="d-flex">
             <select name="status" class="form-select me-2" onchange="this.form.submit()">
                 <option value="">All Statuses</option>
@@ -28,7 +28,7 @@
             {% endif %}
         </form>
     </div>
-    <div class="col-md-6 text-end">
+    <div class="col-12 col-md-6 text-md-end">
         <span class="text-muted">
             Showing {{ orders.items|length }} of {{ orders.total }} orders
             {% if status_filter %}({{ status_filter.title() }} only){% endif %}
@@ -45,13 +45,11 @@
                     <thead class="table-dark">
                         <tr>
                             <th>Order #</th>
-                            {% if current_user.is_admin() %}
                             <th>Customer</th>
-                            {% endif %}
-                            <th>Items</th>
+                            <th class="d-none d-sm-table-cell">Items</th>
                             <th>Total Amount</th>
                             <th>Status</th>
-                            <th>Order Date</th>
+                            <th class="d-none d-md-table-cell">Order Date</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -61,12 +59,10 @@
                             <td>
                                 <strong>#{{ order.id }}</strong>
                             </td>
-                            {% if current_user.is_admin() %}
                             <td>
-                                <i class="bi bi-person"></i> {{ order.user.username }}
+                                <i class="bi bi-person"></i> {{ order.customer.name }}
                             </td>
-                            {% endif %}
-                            <td>
+                            <td class="d-none d-sm-table-cell">
                                 <span class="badge bg-secondary">{{ order.item_count }} items</span>
                             </td>
                             <td>
@@ -78,7 +74,7 @@
                                     {{ order.status.title() }}
                                 </span>
                             </td>
-                            <td>
+                            <td class="d-none d-md-table-cell">
                                 <div>{{ order.created_at.strftime('%m/%d/%Y') }}</div>
                                 <small class="text-muted">{{ order.created_at.strftime('%I:%M %p') }}</small>
                             </td>
@@ -88,7 +84,7 @@
                                        class="btn btn-outline-primary" title="View Details">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    {% if current_user.is_admin() and order.status in ['pending', 'processing'] %}
+                                    {% if order.status in ['pending', 'processing'] %}
                                     <button type="button" class="btn btn-outline-warning" 
                                             data-bs-toggle="modal" 
                                             data-bs-target="#statusModal"
@@ -176,16 +172,16 @@
             <div class="card-body">
                 <h6><i class="bi bi-info-circle"></i> Order Status Guide</h6>
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <span class="badge bg-warning">Pending</span> - Order placed, awaiting processing
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <span class="badge bg-info">Processing</span> - Order is being prepared
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <span class="badge bg-success">Completed</span> - Order fulfilled successfully
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <span class="badge bg-secondary">Cancelled</span> - Order was cancelled
                     </div>
                 </div>
@@ -194,7 +190,6 @@
     </div>
 </div>
 
-{% if current_user.is_admin() %}
 <!-- Status Update Modal -->
 <div class="modal fade" id="statusModal" tabindex="-1">
     <div class="modal-dialog">
@@ -207,7 +202,7 @@
                 <div class="modal-body">
                     {{ update_status_form.csrf_token }}
                     <input type="hidden" name="order_id" id="modalOrderId">
-                    
+
                     <div class="mb-3">
                         <label for="modalStatus" class="form-label">New Status</label>
                         <select name="status" id="modalStatus" class="form-select" required>
@@ -217,7 +212,7 @@
                             <option value="cancelled">Cancelled</option>
                         </select>
                     </div>
-                    
+
                     <div class="alert alert-info">
                         <i class="bi bi-info-circle"></i>
                         <strong>Note:</strong> Status changes are logged and cannot be undone.
@@ -233,11 +228,9 @@
         </div>
     </div>
 </div>
-{% endif %}
 {% endblock %}
 
 {% block scripts %}
-{% if current_user.is_admin() %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const statusModal = document.getElementById('statusModal');
@@ -246,12 +239,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const button = event.relatedTarget;
             const orderId = button.getAttribute('data-order-id');
             const currentStatus = button.getAttribute('data-current-status');
-            
+
             document.getElementById('modalOrderId').value = orderId;
             document.getElementById('modalStatus').value = currentStatus;
         });
     }
 });
 </script>
-{% endif %}
 {% endblock %}

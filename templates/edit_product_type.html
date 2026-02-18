@@ -128,9 +128,9 @@
                     <div>
                         <small class="fw-bold">{{ product.name }}</small>
                         <br>
-                        <small class="text-muted">{{ product.color }} - {{ product.size }}</small>
+                        <small class="text-muted">{{ product.product_code }} - {{ product.size }}</small>
                     </div>
-                    <span class="badge bg-secondary">${{ "%.2f"|format(product.price) }}</span>
+                    <span class="badge bg-secondary">{{ CURRENCY_SYMBOL }}{{ "%.0f"|format(product.price) }}</span>
                 </div>
                 {% endfor %}
                 {% if product_type.products|length > 5 %}
@@ -143,30 +143,4 @@
         {% endif %}
     </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Auto-capitalize first letter of product type name
-    const nameInput = document.getElementById('name');
-    if (nameInput) {
-        nameInput.addEventListener('blur', function() {
-            if (this.value) {
-                this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1).toLowerCase();
-            }
-        });
-    }
-    
-    // Form validation
-    const form = document.querySelector('.needs-validation');
-    form.addEventListener('submit', function(event) {
-        if (!form.checkValidity()) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-        form.classList.add('was-validated');
-    });
-});
-</script>
 {% endblock %}

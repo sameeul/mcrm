@@ -3,7 +3,7 @@
 {% block title %}Create Order - Secure Order Management{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 page-header">
     <h1><i class="bi bi-cart-plus"></i> Create New Order</h1>
     <a href="{{ url_for('main.orders') }}" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left"></i> Back to Orders
@@ -11,7 +11,7 @@
 </div>
 
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-lg-8">
         <form method="POST" class="needs-validation" novalidate id="orderForm">
             {{ form.hidden_tag() }}
             {{ form.products_data() }}
@@ -23,7 +23,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-sm-6 mb-3">
                             {{ form.customer_name.label(class="form-label") }}
                             {{ form.customer_name(class="form-control" + (" is-invalid" if form.customer_name.errors else "")) }}
                             {% if form.customer_name.errors %}
@@ -34,8 +34,8 @@
                                 </div>
                             {% endif %}
                         </div>
-                        
-                        <div class="col-md-6 mb-3">
+
+                        <div class="col-sm-6 mb-3">
                             {{ form.customer_phone.label(class="form-label") }}
                             {{ form.customer_phone(class="form-control" + (" is-invalid" if form.customer_phone.errors else ""), placeholder="e.g., +8801XXXXXXXXX") }}
                             {% if form.customer_phone.errors %}
@@ -58,6 +58,15 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="parseAddressBtn">
+                                <i class="bi bi-geo-alt"></i> Parse Address
+                            </button>
+                            <span id="parseAddressLoading" class="d-none ms-2">
+                                <i class="bi bi-arrow-clockwise spin"></i> Parsing address...
+                            </span>
+                            <div id="parseAddressResult" class="mt-2"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -69,7 +78,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-4 mb-3">
+                        <div class="col-sm-6 col-md-4 mb-3">
                             {{ form.city_id.label(class="form-label") }}
                             {{ form.city_id(class="form-select" + (" is-invalid" if form.city_id.errors else ""), id="city_id") }}
                             {% if form.city_id.errors %}
@@ -86,7 +95,7 @@
                             </div>
                         </div>
                         
-                        <div class="col-md-4 mb-3">
+                        <div class="col-sm-6 col-md-4 mb-3">
                             {{ form.zone_id.label(class="form-label") }}
                             {{ form.zone_id(class="form-select" + (" is-invalid" if form.zone_id.errors else ""), id="zone_id", disabled=true) }}
                             {% if form.zone_id.errors %}
@@ -143,24 +152,24 @@
                     <div id="productRowTemplate" class="d-none">
                         <div class="product-row border rounded p-3 mb-3">
                             <div class="row align-items-center">
-                                <div class="col-md-6">
+                                <div class="col-12 col-sm-6">
                                     <label class="form-label">Product</label>
                                     <select class="form-select product-select" required>
                                         <option value="">Select a product...</option>
                                     </select>
                                     <div class="invalid-feedback">Please select a product</div>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-6 col-sm-3">
                                     <label class="form-label">Quantity</label>
                                     <input type="number" class="form-control quantity-input" min="1" value="1" required>
                                     <div class="invalid-feedback">Please enter a valid quantity</div>
                                     <small class="form-text text-muted stock-info"></small>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-4 col-sm-2">
                                     <label class="form-label">Subtotal</label>
                                     <div class="form-control-plaintext fw-bold subtotal">$0.00</div>
                                 </div>
-                                <div class="col-md-1">
+                                <div class="col-2 col-sm-1">
                                     <label class="form-label">&nbsp;</label>
                                     <button type="button" class="btn btn-outline-danger btn-sm d-block remove-product-btn">
                                         <i class="bi bi-trash"></i>
@@ -179,7 +188,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-sm-6 mb-3">
                             {{ form.delivery_charge.label(class="form-label") }}
                             <div class="input-group">
                                 <span class="input-group-text">{{ CURRENCY_SYMBOL }}</span>
@@ -195,7 +204,7 @@
                             <div class="form-text">Enter delivery charges (if any)</div>
                         </div>
                         
-                        <div class="col-md-6 mb-3">
+                        <div class="col-sm-6 mb-3">
                             {{ form.discount.label(class="form-label") }}
                             <div class="input-group">
                                 <span class="input-group-text">{{ CURRENCY_SYMBOL }}</span>
@@ -262,7 +271,7 @@
     </div>
     
     <!-- Order Information Sidebar -->
-    <div class="col-md-4">
+    <div class="col-lg-4">
         <div class="card">
             <div class="card-header">
                 <h6><i class="bi bi-info-circle"></i> Order Information</h6>
@@ -363,19 +372,19 @@
             <div class="card-body">
                 <h6><i class="bi bi-question-circle"></i> Need Help?</h6>
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <strong>Customer Info:</strong><br>
                         <small class="text-muted">Enter complete customer details for delivery</small>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <strong>Location Selection:</strong><br>
                         <small class="text-muted">Use cascading dropdowns for precise addressing</small>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <strong>Product Selection:</strong><br>
                         <small class="text-muted">Add multiple products to create comprehensive orders</small>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <strong>Order Processing:</strong><br>
                         <small class="text-muted">Orders are processed immediately upon creation</small>
                     </div>
@@ -428,6 +437,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize
     loadCities();
     loadProducts();
+    
+    // Address parsing elements
+    const parseAddressBtn = document.getElementById('parseAddressBtn');
+    const parseAddressLoading = document.getElementById('parseAddressLoading');
+    const parseAddressResult = document.getElementById('parseAddressResult');
+    const customerAddressField = document.getElementById('customer_address');
+    
+    // Address parsing event listener
+    parseAddressBtn.addEventListener('click', parseAddress);
     
     // Location handling
     citySelect.addEventListener('change', function() {
@@ -865,8 +883,8 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSelectedProducts();
         
         // Get values
-        const deliveryCharge = parseFloat(deliveryChargeInput.value) || 0;
-        const discount = parseFloat(discountInput.value) || 0;
+        const deliveryCharge = parseInt(deliveryChargeInput.value) || 0;
+        const discount = parseInt(discountInput.value) || 0;
         
         // Calculate products subtotal
         const productsSubtotalAmount = selectedProducts.reduce((sum, product) => sum + product.subtotal, 0);
@@ -894,6 +912,125 @@ document.addEventListener('DOMContentLoaded', function() {
             orderTotal.classList.remove('text-danger');
             orderTotal.classList.add('text-success');
         }
+    }
+    
+    // Parse address function
+    function parseAddress() {
+        const address = customerAddressField.value.trim();
+        
+        if (!address) {
+            showParseResult('Please enter an address first.', 'warning');
+            return;
+        }
+        
+        // Get CSRF token from the form
+        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+        
+        // Show loading state
+        parseAddressBtn.disabled = true;
+        parseAddressLoading.classList.remove('d-none');
+        parseAddressResult.innerHTML = '';
+        
+        // Make API call with CSRF token
+        fetch('/api/parse-address', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ address: address })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.data) {
+                handleParseSuccess(data.data);
+            } else {
+                showParseResult(data.error || 'Failed to parse address', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error parsing address:', error);
+            showParseResult('Error parsing address. Please try again.', 'danger');
+        })
+        .finally(() => {
+            parseAddressBtn.disabled = false;
+            parseAddressLoading.classList.add('d-none');
+        });
+    }
+    
+    // Handle successful address parsing
+    function handleParseSuccess(parsedData) {
+        const districtId = parsedData.district_id;
+        const zoneId = parsedData.zone_id;
+        const districtName = parsedData.district_name;
+        const zoneName = parsedData.zone_name;
+        const hubName = parsedData.hub_name;
+        const score = parsedData.score;
+        
+        // Show success message with parsed information
+        let resultMessage = `
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle"></i> <strong>Address parsed successfully!</strong><br>
+                <small>
+                    District: ${districtName || 'N/A'} | Zone: ${zoneName || 'N/A'}
+                </small>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        parseAddressResult.innerHTML = resultMessage;
+        
+        // Auto-populate city dropdown if district_id is available
+        if (districtId) {
+            // Find the city option with matching ID
+            const cityOption = Array.from(citySelect.options).find(option => 
+                parseInt(option.value) === districtId
+            );
+            
+            if (cityOption) {
+                citySelect.value = districtId;
+                citySelect.classList.remove('is-invalid');
+                
+                // Trigger change event to load zones
+                const changeEvent = new Event('change');
+                citySelect.dispatchEvent(changeEvent);
+                
+                // Wait a bit for zones to load, then set zone
+                if (zoneId) {
+                    setTimeout(() => {
+                        setZoneValue(zoneId);
+                    }, 1000);
+                }
+            } else {
+                showParseResult(`District "${districtName}" not found in available cities.`, 'warning');
+            }
+        }
+    }
+    
+    // Set zone value after zones are loaded
+    function setZoneValue(zoneId) {
+        const zoneOption = Array.from(zoneSelect.options).find(option => 
+            parseInt(option.value) === zoneId
+        );
+        
+        if (zoneOption) {
+            zoneSelect.value = zoneId;
+            zoneSelect.classList.remove('is-invalid');
+        }
+    }
+    
+    // Show parse result message
+    function showParseResult(message, type) {
+        const alertClass = type === 'success' ? 'alert-success' : 
+                          type === 'warning' ? 'alert-warning' : 'alert-danger';
+        const icon = type === 'success' ? 'bi-check-circle' : 
+                    type === 'warning' ? 'bi-exclamation-triangle' : 'bi-x-circle';
+        
+        parseAddressResult.innerHTML = `
+            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                <i class="bi ${icon}"></i> ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
     }
 });
 </script>

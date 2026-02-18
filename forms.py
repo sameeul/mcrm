@@ -168,11 +168,7 @@ class ProductForm(FlaskForm):
     
     def validate_product_code(self, product_code):
         # Check for duplicate product code
-        query = Product.query.filter_by(product_code=product_code.data)
-        if self.product_id:
-            query = query.filter(Product.id != self.product_id)
-        if query.first():
-            raise ValidationError('Product code already exists. Please choose a different code.')
+        pass
     
     def validate_product_combination(self):
         # Check for duplicate product combination
@@ -246,12 +242,12 @@ class CreateOrderForm(FlaskForm):
     products_data = HiddenField('Products Data')
     
     # Order Financial Details
-    delivery_charge = DecimalField('Delivery Charges', validators=[
+    delivery_charge = IntegerField('Delivery Charges', validators=[
         NumberRange(min=0, message='Delivery charges cannot be negative')
-    ], places=2, default=0.00)
-    discount = DecimalField('Discount', validators=[
+    ], default=0)
+    discount = IntegerField('Discount', validators=[
         NumberRange(min=0, message='Discount cannot be negative')
-    ], places=2, default=0.00)
+    ], default=0)
     
     def __init__(self, *args, **kwargs):
         super(CreateOrderForm, self).__init__(*args, **kwargs)

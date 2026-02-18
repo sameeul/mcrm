@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from datetime import datetime
+from datetime import datetime, UTC
 from models import db, User, LoginAttempt
 from forms import LoginForm, CreateUserForm, ChangePasswordForm
 import functools
@@ -42,7 +42,7 @@ def login():
         if user and user.check_password(form.password.data) and user.is_active:
             # Successful login
             login_user(user, remember=False)
-            user.last_login = datetime.utcnow()
+            user.last_login = datetime.now(UTC)
             db.session.commit()
             
             log_login_attempt(form.username.data, True, ip_address)
