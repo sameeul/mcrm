@@ -80,7 +80,10 @@ class PathaoToken(db.Model):
     @property
     def is_expired(self):
         """Check if token is expired"""
-        return datetime.now(UTC) >= self.expires_at
+        expires_at = self.expires_at
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=UTC)
+        return datetime.now(UTC) >= expires_at
     
     def __repr__(self):
         return f'<PathaoToken expires_at={self.expires_at}>'

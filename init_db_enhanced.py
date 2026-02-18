@@ -61,7 +61,7 @@ def create_pathao_data():
     # for each PathaoCity, retrieve PathaoZoneS
     print("Fetching Pathao Zones")
     for city in PathaoCity.query.all():
-        PathaoService.get_zones(force_refresh = True, city_id = city.id)
+        PathaoService.get_zones(force_refresh = True, city_id = city.city_id)
     print("Fetching Pathao Stores")
     PathaoService.get_stores(force_refresh = True)
 
